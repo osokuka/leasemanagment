@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+node_modules/
+staticfiles/
+static_root/
+*.log
+.env
+.docker/
+postgres_data/

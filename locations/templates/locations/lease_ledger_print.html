@@ -1,0 +1,234 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lease.display_id }}_{{ now|date:"Y-m-d" }}_{% trans "Payment Ledger" %}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #000;
+            background: #fff;
+            padding: 32px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #333;
+        }
+        .header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .header p { font-size: 13px; color: #666; }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .summary-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+        }
+        .summary-card__label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .summary-card__value { font-size: 16px; font-weight: 700; }
+        .summary-card__value--debt { color: #cc1022; }
+        .summary-card__value--paid { color: #057642; }
+        .stipulation {
+            border: 1px solid #d49b1a;
+            background: #fff8e1;
+            border-radius: 4px;
+            padding: 12px 14px;
+            margin-bottom: 24px;
+            font-size: 11px;
+            color: #5f4300;
+        }
+        .stipulation strong {
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 10px;
+        }
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 24px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #ddd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+            font-size: 11px;
+        }
+        th {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-size: 10px;
+            color: #666;
+            background: #f5f5f5;
+        }
+        tr:nth-child(even) { background: #fafafa; }
+        .muted { color: #666; }
+        .footer {
+            margin-top: 48px;
+            padding-top: 16px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+        }
+        @media print {
+            body { padding: 16px; }
+            .summary-card { border-color: #999; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ lease.display_id }} - {% trans "Payment Ledger" %}</h1>
+        <p>{% trans "Tenant" %}: <strong>{{ lease.name }}</strong> &middot; {% trans "Contract" %}: {{ lease.start_date }}{% if lease.end_date %} - {{ lease.end_date }}{% endif %} &middot; {% trans "Monthly Payment" %}: &euro;{{ lease.monthly_payment }}</p>
+    </div>
+
+    <div class="summary">
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Total Due" %}</div>
+            <div class="summary-card__value">&euro;{{ total_due|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Total Paid" %}</div>
+            <div class="summary-card__value summary-card__value--paid">&euro;{{ total_paid|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Remaining Balance" %}</div>
+            <div class="summary-card__value {% if running_balance > 0 %}summary-card__value--debt{% else %}summary-card__value--paid{% endif %}">&euro;{{ running_balance|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Entries" %}</div>
+            <div class="summary-card__value">{{ ledgers|length }}</div>
+        </div>
+    </div>
+
+    <div class="stipulation">
+        <strong>{% trans "Payment stipulation" %}</strong>
+        {% trans "This document is for information only. Payments are considered paid only when the payment slip has been submitted and is verifiable by the bank or a third-party financial institution." %}
+    </div>
+
+    <div class="section-title">{% trans "Lease Payment Ledger" %}</div>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Period" %}</th>
+                <th>{% trans "Due" %}</th>
+                <th>{% trans "Paid" %}</th>
+                <th>{% trans "Balance" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Payment Date" %}</th>
+                <th>{% trans "Notes" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in ledgers %}
+            <tr>
+                <td><strong>{{ entry.month|stringformat:"02d" }}/{{ entry.year }}</strong></td>
+                <td>&euro;{{ entry.amount_due }}</td>
+                <td>{% if entry.amount_paid > 0 %}&euro;{{ entry.amount_paid }}{% else %}<span class="muted">-</span>{% endif %}</td>
+                <td>
+                    <strong style="color:{% if entry.running_balance > 0 %}#cc1022{% elif entry.running_balance < 0 %}#057642{% else %}#999{% endif %};">
+                        &euro;{{ entry.running_balance|floatformat:2 }}
+                    </strong>
+                </td>
+                <td>
+                    {% if entry.status == 'paid' or entry.effectively_paid %}
+                        {% if entry.effectively_paid and entry.status != 'paid' %}{% trans "Paid" %} ({% trans "Credit" %}){% else %}{% trans "Paid" %}{% endif %}
+                    {% elif entry.status == 'partial' %}{% trans "Partial" %}
+                    {% elif entry.status == 'unpaid' %}{% trans "Unpaid" %}
+                    {% elif entry.status == 'overdue' %}{% trans "Overdue" %}
+                    {% else %}{{ entry.status }}{% endif %}
+                </td>
+                <td>{{ entry.payment_date|default:"-" }}</td>
+                <td>{{ entry.notes|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">{% trans "Meter Standings" %}</div>
+    <div class="summary">
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Meters" %}</div>
+            <div class="summary-card__value">{{ meter_count }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Open Meter Expenses" %}</div>
+            <div class="summary-card__value summary-card__value--debt">{{ meter_open_count }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Settled Meter Expenses" %}</div>
+            <div class="summary-card__value summary-card__value--paid">{{ meter_settled_count }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card__label">{% trans "Meter Outstanding Total" %}</div>
+            <div class="summary-card__value {% if meter_total_outstanding > 0 %}summary-card__value--debt{% else %}summary-card__value--paid{% endif %}">&euro;{{ meter_total_outstanding|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Unit" %}</th>
+                <th>{% trans "Meter" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Latest Period" %}</th>
+                <th>{% trans "Reading" %}</th>
+                <th>{% trans "Outstanding Amount" %}</th>
+                <th>{% trans "Status" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in meter_rows %}
+            <tr>
+                <td>{{ row.unit.name }}</td>
+                <td>{{ row.meter.name }}</td>
+                <td>{{ row.meter.get_meter_type_display }}</td>
+                <td>{% if row.ledger %}{{ row.ledger.month|stringformat:"02d" }}/{{ row.ledger.year }}{% else %}<span class="muted">-</span>{% endif %}</td>
+                <td>{% if row.ledger and row.ledger.reading %}{{ row.ledger.reading }}{% else %}<span class="muted">-</span>{% endif %}</td>
+                <td>&euro;{{ row.outstanding|floatformat:2 }}</td>
+                <td>{% if row.outstanding > 0 %}{% trans "Open" %}{% else %}{% trans "Settled" %}{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="muted">{% trans "No meters assigned to this lease." %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Bibaj Menaxhment &middot; {% trans "Report generated on" %} {{ now|date:"d.m.Y" }} &middot; {{ lease.display_id }}
+    </div>
+
+    <script>
+        window.addEventListener('load', function() {
+            window.print();
+        });
+    </script>
+</body>
+</html>

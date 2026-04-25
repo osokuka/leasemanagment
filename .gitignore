@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual env
+env/
+venv/
+.venv/
+
+# Django
+staticfiles/
+static_root/
+media/
+*.log
+
+# Environment
+.env
+.env.local
+.env.production
+kesco_accounts.json
+secrets/
+
+# IDE
+.vscode/
+.idea/
+.qwen/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+postgres_data/

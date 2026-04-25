@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard" %} — Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1>{% trans "Dashboard" %}</h1>
+    </div>
+
+    <!-- KPI Cards Grid -->
+    <div class="kpi-grid">
+        <!-- KPI 1: Leases with Unpaid Debt -->
+        <a href="{% url 'unpaid_ledgers' %}" class="kpi-card kpi-card--warning">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 9V13M12 17H12.01M21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3C16.97 3 21 7.03 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ unpaid_leases_count }}</div>
+            <div class="kpi-card__label">{% trans "Unpaid Leases" %}</div>
+            {% if unpaid_total_sum > 0 %}
+            <div class="kpi-card__sum">€{{ unpaid_total_sum|floatformat:2 }}</div>
+            {% endif %}
+        </a>
+
+        <!-- KPI 2: Units with Meter Debts -->
+        <a href="{% url 'units_with_meter_debt' %}" class="kpi-card kpi-card--danger">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ units_with_meter_debt_count }}</div>
+            <div class="kpi-card__label">{% trans "Units with Meter Debts" %}</div>
+        </a>
+
+        <!-- KPI 3: Active Leases -->
+        <a href="{% url 'lease_list' %}" class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12H15M9 16H15M9 8H15M4 4H20C20.55 4 21 4.45 21 5V19C21 19.55 20.55 20 20 20H4C3.45 20 3 19.55 3 19V5C3 4.45 3.45 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ active_leases_count }}</div>
+            <div class="kpi-card__label">{% trans "Active Leases" %}</div>
+        </a>
+
+        <!-- KPI 4: Total Units -->
+        <a href="{% url 'locations:location_list' %}" class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 21H21M3 10H21M5 6L12 3L19 6M4 10V21M20 10V21M8 14H9V18H8V14ZM12 14H13V18H12V14ZM16 14H17V18H16V14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ total_units_count }}</div>
+            <div class="kpi-card__label">{% trans "Total Units" %}</div>
+        </a>
+    </div>
+
+    <!-- Preview Section: Unpaid Leases -->
+    {% if unpaid_leases %}
+    <div class="dashboard-section">
+        <div class="dashboard-section__header">
+            <h2>{% trans "Leases with Debt" %}</h2>
+            <a href="{% url 'unpaid_ledgers' %}" class="btn btn--secondary btn--small">{% trans "View All" %}</a>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Lease" %}</th>
+                    <th>{% trans "Period" %}</th>
+                    <th>{% trans "Total Unpaid" %}</th>
+                    <th>{% trans "Status" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lease in unpaid_leases %}
+                <tr class="clickable">
+                    <td data-label="{% trans 'Lease' %}">
+                        <a href="{% url 'lease_detail' uuid=lease.uuid %}">{{ lease.name }}</a>
+                    </td>
+                    <td data-label="{% trans 'Period' %}">
+                        {% if lease.payment_ledgers.exists %}
+                        {{ lease.payment_ledgers.all.0.month|stringformat:"02d" }}/{{ lease.payment_ledgers.all.0.year }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td data-label="{% trans 'Total Unpaid' %}">
+                        <strong>€{{ lease.total_debt|floatformat:2 }}</strong>
+                    </td>
+                    <td data-label="{% trans 'Status' %}">
+                        <span class="badge badge--warning">{% trans "Debt" %}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Preview Section: Units with Meter Debts -->
+    {% if units_with_meter_debt %}
+    <div class="dashboard-section">
+        <div class="dashboard-section__header">
+            <h2>{% trans "Units with Meter Debts" %}</h2>
+            <a href="{% url 'units_with_meter_debt' %}" class="btn btn--secondary btn--small">{% trans "View All" %}</a>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Unit" %}</th>
+                    <th>{% trans "Location" %}</th>
+                    <th>{% trans "Meters with Debt" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for unit in units_with_meter_debt %}
+                <tr class="clickable">
+                    <td data-label="{% trans 'Unit' %}">
+                        <a href="{% url 'locations:unit_detail' location_uuid=unit.location.uuid unit_uuid=unit.uuid %}">{{ unit.name }}</a>
+                    </td>
+                    <td data-label="{% trans 'Location' %}">{{ unit.location.name }}</td>
+                    <td data-label="{% trans 'Meters' %}">
+                        {% for meter in unit.meters.all %}
+                            {% if meter.ledgers.exists and meter.ledgers.first.billed_amount > 0 %}
+                                <span class="badge badge--{{ meter.meter_type }}">{{ meter.name }} — €{{ meter.ledgers.first.billed_amount }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Empty State -->
+    {% if not unpaid_leases and not units_with_meter_debt %}
+    <div class="dashboard-empty">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="28" stroke="var(--border-color)" stroke-width="2"/>
+            <path d="M32 20V36M32 44H32.01" stroke="var(--success)" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <p>{% trans "All caught up! No unpaid lease ledgers or meter debts." %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

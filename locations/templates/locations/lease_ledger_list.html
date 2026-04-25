@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ lease.display_id }} — {% trans "Payment Ledger" %} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ lease.display_id }} — {% trans "Payment Ledger" %}</h1>
+    <div class="flex gap-8">
+        {% if user.is_admin %}
+        <a href="/leases/{{ lease.uuid }}/ledger/create/" class="btn btn--primary">{% trans "+ Add Entry" %}</a>
+        {% endif %}
+        <a href="/leases/{{ lease.uuid }}/" class="btn btn--secondary">{% trans "Back to Lease" %}</a>
+    </div>
+</div>
+
+<!-- Lease Summary -->
+<div class="card mb-24" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Tenant" %}</span>
+        <span style="font-size:14px; font-weight:600;">{{ lease.name }}</span>
+    </div>
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Monthly" %}</span>
+        <span style="font-size:14px; font-weight:600;">€{{ lease.monthly_payment }}</span>
+    </div>
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Total Due" %}</span>
+        <span style="font-size:14px; font-weight:600;">€{{ total_due|floatformat:2 }}</span>
+    </div>
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Total Paid" %}</span>
+        <span style="font-size:14px; font-weight:600;">€{{ total_paid|floatformat:2 }}</span>
+    </div>
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Remaining Balance" %}</span>
+        <span style="font-size:14px; font-weight:700; color:{% if running_balance > 0 %}var(--error){% elif running_balance < 0 %}var(--success){% else %}var(--text-secondary){% endif %};">
+            €{{ running_balance|floatformat:2 }}
+        </span>
+    </div>
+</div>
+
+<!-- Print Button -->
+<div class="flex gap-8 mb-24" style="margin-top:16px;">
+    <a href="/leases/{{ lease.uuid }}/ledger/print/" target="_blank" class="btn btn--secondary">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11 5V1H3v4M3 10v3h8v-3M1 10h12v3H1z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        {% trans "Print / PDF" %}
+    </a>
+</div>
+
+<!-- Ledger Table -->
+{% if page_obj %}
+<div class="card" style="padding:0; overflow:hidden;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Period" %}</th>
+                <th>{% trans "Due" %}</th>
+                <th>{% trans "Paid" %}</th>
+                <th>{% trans "Balance" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Payment Date" %}</th>
+                <th>{% trans "Slip" %}</th>
+                {% if user.is_admin %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in page_obj %}
+            <tr>
+                <td data-label="{% trans "Period" %}"><strong>{{ entry.month|stringformat:"02d" }}/{{ entry.year }}</strong></td>
+                <td data-label="{% trans "Due" %}">€{{ entry.amount_due }}</td>
+                <td data-label="{% trans "Paid" %}">
+                    {% if entry.amount_paid > 0 %}€{{ entry.amount_paid }}{% else %}—{% endif %}
+                </td>
+                <td data-label="{% trans "Balance" %}">
+                    <strong style="color:{% if entry.running_balance > 0 %}var(--error){% elif entry.running_balance < 0 %}var(--success){% else %}var(--text-secondary){% endif %};">
+                        €{{ entry.running_balance|floatformat:2 }}
+                    </strong>
+                </td>
+                <td data-label="{% trans "Status" %}">
+                    {% if entry.status == 'paid' or entry.effectively_paid %}
+                        <span class="badge badge--paid">
+                            {% if entry.effectively_paid and entry.status != 'paid' %}
+                                {% trans "Paid" %} ({% trans "Credit" %})
+                            {% else %}
+                                {{ entry.get_status_display }}
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <span class="badge badge--{{ entry.status }}">{{ entry.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td data-label="{% trans "Payment Date" %}">{{ entry.payment_date|default:"—" }}</td>
+                <td data-label="{% trans "Slip" %}">
+                    {% if entry.payment_slip %}
+                        <a href="{{ entry.payment_slip.url }}" target="_blank" rel="noopener">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 10v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3M6 4l4-4 4 4M10 1v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    {% else %}—{% endif %}
+                </td>
+                {% if user.is_admin %}
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8">
+                        <a href="/leases/{{ lease.uuid }}/ledger/{{ entry.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if user.is_super_user %}
+                        <form action="/leases/{{ lease.uuid }}/ledger/{{ entry.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{% if user.is_admin %}8{% else %}7{% endif %}" class="text-center" style="padding:32px; color:var(--text-secondary);">
+                    {% trans "No ledger entries yet." %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        <span class="pagination__info">
+            {% blocktrans with number=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ number }} of {{ pages }}{% endblocktrans %}
+        </span>
+        <div class="pagination__nav">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn--secondary btn--small">{% trans "Previous" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Previous" %}</span>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn--secondary btn--small">{% trans "Next" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Next" %}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="card text-center" style="padding:48px 16px; color:var(--text-secondary);">
+    {% trans "No payment entries yet. Click '+ Add Entry' to record a payment." %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Locations" %} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% trans "Locations" %}</h1>
+    {% if user.is_admin %}
+    <a href="/locations/create/" class="btn btn--primary">{% trans "+ New Location" %}</a>
+    {% endif %}
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    {% if page_obj %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Address" %}</th>
+                <th>{% trans "Focal Point" %}</th>
+                <th>{% trans "Google Pin" %}</th>
+                {% if user.is_admin %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for loc in page_obj %}
+            <tr class="clickable" onclick="window.location.href='/locations/{{ loc.uuid }}/'">
+                <td data-label="{% trans "Name" %}">
+                    <a href="/locations/{{ loc.uuid }}/">{{ loc.name }}</a>
+                </td>
+                <td data-label="{% trans "Address" %}">{{ loc.address|truncatechars:50 }}</td>
+                <td data-label="{% trans "Focal Point" %}">{{ loc.focal_point|default:"—" }}</td>
+                <td data-label="{% trans "Google Pin" %}">
+                    {% if loc.google_pin %}
+                    <a href="{{ loc.google_pin }}" target="_blank" rel="noopener">{% trans "Open Map" %}</a>
+                    {% else %}—{% endif %}
+                </td>
+                {% if user.is_admin %}
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8">
+                        <a href="/locations/{{ loc.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if user.is_super_user %}
+                        <form action="/locations/{{ loc.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        <span class="pagination__info">
+            {% blocktrans with number=page_obj.number pages=page_obj.paginator.num_pages %}
+                Page {{ number }} of {{ pages }}
+            {% endblocktrans %}
+        </span>
+        <div class="pagination__nav">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn--secondary btn--small">{% trans "Previous" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Previous" %}</span>
+            {% endif %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn--secondary btn--small">{% trans "Next" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Next" %}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center" style="padding: 48px 16px; color: var(--text-secondary);">
+        {% trans "No locations found." %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

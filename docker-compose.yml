@@ -1,0 +1,72 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bldg_mgm}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8800:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      POSTGRES_DB: ${POSTGRES_DB:-bldg_mgm}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-change-me-in-production}
+      DEBUG: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  kesco-sync:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py sync_kesco_meters --loop"
+    volumes:
+      - .:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      POSTGRES_DB: ${POSTGRES_DB:-bldg_mgm}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-change-me-in-production}
+      DEBUG: "0"
+      KESCO_ACCOUNTS_FILE: ${KESCO_ACCOUNTS_FILE:-}
+      KESCO_ACCOUNTS_JSON: ${KESCO_ACCOUNTS_JSON:-}
+      KESCO_LOGIN_URL: ${KESCO_LOGIN_URL:-https://fatura.kesco-energy.com/api/Account/login}
+      KESCO_LOGIN_USERNAME_FIELD: ${KESCO_LOGIN_USERNAME_FIELD:-email}
+      KESCO_LOGIN_PASSWORD_FIELD: ${KESCO_LOGIN_PASSWORD_FIELD:-password}
+      KESCO_BEARER_TOKEN: ${KESCO_BEARER_TOKEN:-}
+      KESCO_USER_IDS: ${KESCO_USER_IDS:-}
+      KESCO_SYNC_INTERVAL_SECONDS: ${KESCO_SYNC_INTERVAL_SECONDS:-3600}
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - integrations
+
+volumes:
+  postgres_data:

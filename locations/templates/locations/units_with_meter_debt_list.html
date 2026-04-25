@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} — Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+    <a href="{% url 'dashboard' %}" class="btn btn--secondary btn--small">{% trans "Back to Dashboard" %}</a>
+</div>
+
+{% if page_obj %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>{% trans "Unit" %}</th>
+            <th>{% trans "Location" %}</th>
+            <th>{% trans "Meters with Debt" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for unit in page_obj %}
+        <tr class="clickable">
+            <td data-label="{% trans 'Unit' %}">
+                <a href="{% url 'unit_detail' location_uuid=unit.location.uuid unit_uuid=unit.uuid %}">{{ unit.name }}</a>
+            </td>
+            <td data-label="{% trans 'Location' %}">{{ unit.location.name }}</td>
+            <td data-label="{% trans 'Meters' %}">
+                {% for meter in unit.meters.all %}
+                    {% with meter.ledgers.first as first_ledger %}
+                        {% if first_ledger and first_ledger.billed_amount > 0 %}
+                            <span class="badge badge--{{ meter.meter_type }}">{{ meter.name }} — €{{ first_ledger.billed_amount }}</span>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    <span class="pagination__info">
+        {% blocktrans with number=page_obj.number paginator=page_obj.paginator %}Page {{ number }} of {{ paginator.num_pages }}{% endblocktrans %}
+    </span>
+    <div class="pagination__nav">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn--secondary btn--small">{% trans "Previous" %}</a>
+        {% else %}
+            <button class="btn btn--secondary btn--small" disabled>{% trans "Previous" %}</button>
+        {% endif %}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn--secondary btn--small">{% trans "Next" %}</a>
+        {% else %}
+            <button class="btn btn--secondary btn--small" disabled>{% trans "Next" %}</button>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<p>{% trans "No units with meter debts found." %}</p>
+{% endif %}
+{% endblock %}

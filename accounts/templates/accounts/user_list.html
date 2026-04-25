@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Users" %} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% trans "Users" %}</h1>
+    {% if user.is_admin %}
+    <a href="/users/create/" class="btn btn--primary">{% trans "+ New User" %}</a>
+    {% endif %}
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Username" %}</th>
+                <th>{% trans "Email" %}</th>
+                <th>{% trans "Role" %}</th>
+                <th>{% trans "Active" %}</th>
+                {% if user.is_admin or user.role == 'data_entry_clerk' %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr class="{% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}clickable{% endif %}" {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}onclick="window.location.href='/users/{{ u.pk }}/edit/'"{% endif %}>
+                <td data-label="{% trans "Username" %}">
+                    {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}<a href="/users/{{ u.pk }}/edit/">{{ u.username }}</a>{% else %}{{ u.username }}{% endif %}
+                </td>
+                <td data-label="{% trans "Email" %}">{{ u.email|default:"—" }}</td>
+                <td data-label="{% trans "Role" %}">
+                    <span class="badge badge--{{ u.role }}">{{ u.get_role_display }}</span>
+                </td>
+                <td data-label="{% trans "Active" %}">{% if u.is_active %}✅{% else %}❌{% endif %}</td>
+                {% if user.is_admin or user.role == 'data_entry_clerk' %}
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8">
+                        {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}
+                        <a href="/users/{{ u.pk }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% endif %}
+                        {% if u.pk != user.pk and user.is_super_user %}
+                        <form action="/users/{{ u.pk }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{% if user.is_admin or user.role == 'data_entry_clerk' %}5{% else %}4{% endif %}" class="text-center" style="padding: 32px; color: var(--text-secondary);">
+                    {% trans "No users found." %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

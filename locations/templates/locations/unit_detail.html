@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ unit.name }} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<!-- Back Navigation -->
+<div class="page-header">
+    <h1>{{ unit.name }}</h1>
+    <div class="flex gap-8">
+        {% if user.is_admin %}
+        <a href="/locations/{{ unit.location.uuid }}/unit/{{ unit.uuid }}/edit/" class="btn btn--secondary">{% trans "Edit Unit" %}</a>
+        {% endif %}
+        <a href="/locations/{{ unit.location.uuid }}/" class="btn btn--secondary">{% trans "Back to Location" %}</a>
+    </div>
+</div>
+
+<!-- Unit Info Card -->
+<div class="card mb-24">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Type" %}</span>
+            <span class="badge badge--{{ unit.unit_type }}">{{ unit.get_unit_type_display }}</span>
+        </div>
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Status" %}</span>
+            {% if unit.is_leased %}
+            <span class="badge badge--leased">{% trans "Leased" %}</span>
+            {% else %}
+            <span class="badge badge--vacant">{% trans "Vacant" %}</span>
+            {% endif %}
+        </div>
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Area" %}</span>
+            <span style="font-size:14px; font-weight:600;">{{ unit.sqm }} m²</span>
+        </div>
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Parking Places" %}</span>
+            <span style="font-size:14px; font-weight:600;">{{ parking.count }}</span>
+        </div>
+        {% if unit.lease %}
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Lease" %}</span>
+            <a href="/leases/{{ unit.lease.uuid }}/" style="font-size:14px; color:var(--accent-primary);">{{ unit.lease }}</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Parking Section -->
+<div class="page-header">
+    <h2 style="font-size:20px; font-weight:600;">{% trans "Parking Places" %}</h2>
+    {% if user.is_admin %}
+    <a href="/locations/{{ unit.location.uuid }}/parking/create/" class="btn btn--primary">{% trans "+ Add Parking" %}</a>
+    {% endif %}
+</div>
+
+{% if parking %}
+<div class="card mb-24" style="padding:0; overflow:hidden;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Label" %}</th>
+                <th>{% trans "Covered" %}</th>
+                {% if user.is_admin %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in parking %}
+            <tr>
+                <td data-label="{% trans "Label" %}"><strong>{{ p.label }}</strong></td>
+                <td data-label="{% trans "Covered" %}">{% if p.covered %}✅{% else %}—{% endif %}</td>
+                {% if user.is_admin %}
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8">
+                        <a href="/locations/{{ unit.location.uuid }}/parking/{{ p.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if user.is_super_user %}
+                        <form action="/locations/{{ unit.location.uuid }}/parking/{{ p.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card mb-24 text-center" style="padding:32px; color:var(--text-secondary);">
+    {% trans "No parking places assigned to this unit." %}
+</div>
+{% endif %}
+
+<!-- Meters Section -->
+<div class="page-header">
+    <h2 style="font-size:20px; font-weight:600;">{% trans "Meters" %}</h2>
+    {% if user.is_admin %}
+    <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meter/create/" class="btn btn--primary">{% trans "+ Add Meter" %}</a>
+    {% endif %}
+</div>
+
+{% if meters %}
+<div class="card mb-24" style="padding:0; overflow:hidden;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Reading Metric" %}</th>
+                <th>{% trans "Serial" %}</th>
+                {% if user.is_admin %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in meters %}
+            <tr class="clickable" onclick="window.location.href='/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meters/{{ m.uuid }}/ledger/'">
+                <td data-label="{% trans "Name" %}">
+                    <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meters/{{ m.uuid }}/ledger/">{{ m.name }}</a>
+                </td>
+                <td data-label="{% trans "Type" %}"><span class="badge badge--{{ m.meter_type }}">{{ m.get_meter_type_display }}</span></td>
+                <td data-label="{% trans "Reading Metric" %}">{{ m.reading_metric }}</td>
+                <td data-label="{% trans "Serial" %}">{{ m.serial_number|default:"—" }}</td>
+                {% if user.is_admin %}
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8">
+                        <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meter/{{ m.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if user.is_super_user %}
+                        <form action="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meter/{{ m.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card text-center" style="padding:32px; color:var(--text-secondary);">
+    {% trans "No meters installed. Click '+ Add Meter' to create one." %}
+</div>
+{% endif %}
+
+<!-- Lease Ledger Section -->
+{% if unit.lease and lease_ledgers %}
+<div class="page-header mt-24">
+    <h2 style="font-size:20px; font-weight:600;">{% trans "Lease Ledger" %} — {{ unit.lease.display_id }}</h2>
+    <a href="/leases/{{ unit.lease.uuid }}/ledger/" class="btn btn--secondary">{% trans "View Full Ledger" %}</a>
+</div>
+
+<div class="card mb-24" style="padding:0; overflow:hidden;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Period" %}</th>
+                <th>{% trans "Due" %}</th>
+                <th>{% trans "Paid" %}</th>
+                <th>{% trans "Balance" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Payment Date" %}</th>
+                <th>{% trans "Slip" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in lease_ledgers %}
+            <tr class="clickable">
+                <td data-label="{% trans "Period" %}"><strong>{{ entry.month|stringformat:"02d" }}/{{ entry.year }}</strong></td>
+                <td data-label="{% trans "Due" %}">€{{ entry.amount_due }}</td>
+                <td data-label="{% trans "Paid" %}">
+                    {% if entry.amount_paid > 0 %}€{{ entry.amount_paid }}{% else %}—{% endif %}
+                </td>
+                <td data-label="{% trans "Balance" %}">
+                    <strong style="color:{% if entry.running_balance > 0 %}var(--error){% elif entry.running_balance < 0 %}var(--success){% else %}var(--text-secondary){% endif %};">
+                        €{{ entry.running_balance|floatformat:2 }}
+                    </strong>
+                </td>
+                <td data-label="{% trans "Status" %}">
+                    {% if entry.status == 'paid' or entry.effectively_paid %}
+                        <span class="badge badge--paid">
+                            {% if entry.effectively_paid and entry.status != 'paid' %}
+                                {% trans "Paid" %} ({% trans "Credit" %})
+                            {% else %}
+                                {{ entry.get_status_display }}
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <span class="badge badge--{{ entry.status }}">{{ entry.get_status_display }}</span>
+                    {% endif %}
+                </td>
+                <td data-label="{% trans "Payment Date" %}">{{ entry.payment_date|default:"—" }}</td>
+                <td data-label="{% trans "Slip" %}">
+                    {% if entry.payment_slip %}
+                        <a href="{{ entry.payment_slip.url }}" target="_blank" rel="noopener">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 10v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3M6 4l4-4 4 4M10 1v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

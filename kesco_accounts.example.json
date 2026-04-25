@@ -1,0 +1,9 @@
+{
+  "accounts": [
+    {
+      "username": "user@example.com",
+      "password": "replace-with-secret-password",
+      "user_id": "optional-kesco-user-id-if-not-present-in-token"
+    }
+  ]
+}

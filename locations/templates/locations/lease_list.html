@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Leases" %} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% trans "Leases" %}</h1>
+    {% if user.is_admin %}
+    <a href="/leases/create/" class="btn btn--primary">{% trans "+ New Lease" %}</a>
+    {% endif %}
+</div>
+
+<div class="card" style="padding:0; overflow:hidden;">
+    {% if page_obj %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Lease ID" %}</th>
+                <th>{% trans "Responsible Party" %}</th>
+                <th>{% trans "Phone" %}</th>
+                <th>{% trans "Monthly" %}</th>
+                <th>{% trans "Units" %}</th>
+                <th>{% trans "Active" %}</th>
+                <th>{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lease in page_obj %}
+            <tr class="clickable" onclick="window.location.href='/leases/{{ lease.uuid }}/'">
+                <td data-label="{% trans "Lease ID" %}">
+                    <a href="/leases/{{ lease.uuid }}/"><strong>{{ lease.display_id }}</strong></a>
+                </td>
+                <td data-label="{% trans "Responsible Party" %}">{{ lease.name }}</td>
+                <td data-label="{% trans "Phone" %}">{{ lease.phone|default:"—" }}</td>
+                <td data-label="{% trans "Monthly" %}">€{{ lease.monthly_payment }}</td>
+                <td data-label="{% trans "Units" %}">{{ lease.unit_count }}</td>
+                <td data-label="{% trans "Active" %}">{% if lease.is_active %}✅{% else %}❌{% endif %}</td>
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8">
+                        <a href="/leases/{{ lease.uuid }}/ledger/print/" target="_blank" rel="noopener" class="btn btn--secondary btn--small">{% trans "Print / PDF" %}</a>
+                        {% if user.is_admin %}
+                        <a href="/leases/{{ lease.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if user.is_super_user %}
+                        <form action="/leases/{{ lease.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center" style="padding:32px; color:var(--text-secondary);">
+                    {% trans "No leases found." %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        <span class="pagination__info">
+            {% blocktrans with number=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ number }} of {{ pages }}{% endblocktrans %}
+        </span>
+        <div class="pagination__nav">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn--secondary btn--small">{% trans "Previous" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Previous" %}</span>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn--secondary btn--small">{% trans "Next" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Next" %}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center" style="padding:48px 16px; color:var(--text-secondary);">
+        {% trans "No leases found. Click '+ New Lease' to create one." %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

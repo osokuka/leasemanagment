@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+    <a href="/locations/" class="btn btn--secondary">{% trans "Back to List" %}</a>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+            <div class="form-error">{{ field.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div class="flex gap-12 mt-24">
+            <button type="submit" class="btn btn--primary">{% trans "Save" %}</button>
+            <a href="/locations/" class="btn btn--secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

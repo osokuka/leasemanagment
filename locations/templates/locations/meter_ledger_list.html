@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ meter.name }} {% trans "Ledger" %} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ meter.name }} - {% trans "Monthly Ledger" %}</h1>
+    <div class="flex gap-8">
+        {% if user.is_admin %}
+        <a href="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/create/" class="btn btn--primary">{% trans "+ Add Entry" %}</a>
+        {% endif %}
+        <a href="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/" class="btn btn--secondary">{% trans "Back to Unit" %}</a>
+    </div>
+</div>
+
+<div class="card mb-24" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Type" %}</span>
+        <span class="badge badge--{{ meter.meter_type }}">{{ meter.get_meter_type_display }}</span>
+    </div>
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Reading Metric" %}</span>
+        <span style="font-size:14px;">{{ meter.reading_metric }}</span>
+    </div>
+    {% if meter.serial_number %}
+    <div>
+        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Serial" %}</span>
+        <span style="font-size:14px;">{{ meter.serial_number }}</span>
+    </div>
+    {% endif %}
+</div>
+
+{% if page_obj %}
+<div class="card" style="padding:0; overflow:hidden;">
+    <table class="table meter-ledger-table">
+        <thead>
+            <tr>
+                <th>{% trans "Period" %}</th>
+                <th>{% trans "Reading" %}</th>
+                <th>{% trans "Outstanding Amount" %}</th>
+                <th>{% trans "Tenant Expense Status" %}</th>
+                {% if user.is_admin %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for ledger in page_obj %}
+            <tr>
+                <td data-label="{% trans "Period" %}"><strong>{{ ledger.month|stringformat:"02d" }}/{{ ledger.year }}</strong></td>
+                <td data-label="{% trans "Reading" %}">{{ ledger.reading|default:"-" }}</td>
+                <td data-label="{% trans "Outstanding Amount" %}">{% if ledger.billed_amount %}&euro;{{ ledger.billed_amount }}{% else %}&euro;0.00{% endif %}</td>
+                <td data-label="{% trans "Tenant Expense Status" %}">
+                    {% if ledger.has_debt %}
+                    <span class="badge badge--overdue">{% trans "Open" %}</span>
+                    {% else %}
+                    <span class="badge badge--paid">{% trans "Settled" %}</span>
+                    {% if ledger.settled_at %}<span class="meter-ledger-table__settled-date">{{ ledger.settled_at }}</span>{% endif %}
+                    {% endif %}
+                </td>
+                {% if user.is_admin %}
+                <td data-label="{% trans "Actions" %}" onclick="event.stopPropagation()">
+                    <div class="meter-ledger-table__actions">
+                        <a href="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if ledger.has_debt %}
+                        <form action="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/settle/" method="post" onsubmit="return confirm('{% trans "Reset this tenant expense to zero after verifying payment?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--secondary btn--small">{% trans "Reset to Zero" %}</button>
+                        </form>
+                        {% endif %}
+                        {% if user.is_super_user %}
+                        <form action="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/delete/" method="post" onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{% if user.is_admin %}5{% else %}4{% endif %}" class="text-center" style="padding:32px; color:var(--text-secondary);">
+                    {% trans "No ledger entries yet." %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        <span class="pagination__info">
+            {% blocktrans with number=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ number }} of {{ pages }}{% endblocktrans %}
+        </span>
+        <div class="pagination__nav">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn--secondary btn--small">{% trans "Previous" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Previous" %}</span>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn--secondary btn--small">{% trans "Next" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Next" %}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="card text-center" style="padding:48px 16px; color:var(--text-secondary);">
+    {% trans "No ledger entries. Click '+ Add Entry' to create one." %}
+</div>
+{% endif %}
+{% endblock %}

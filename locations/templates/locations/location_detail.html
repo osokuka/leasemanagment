@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ location.name }} - Bibaj Menaxhment{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ location.name }}</h1>
+    <div class="flex gap-8">
+        {% if user.is_admin %}
+        <a href="/locations/{{ location.uuid }}/edit/" class="btn btn--secondary">{% trans "Edit Location" %}</a>
+        {% endif %}
+        <a href="/locations/" class="btn btn--secondary">{% trans "Back to List" %}</a>
+    </div>
+</div>
+
+<!-- Location Info Card -->
+<div class="card mb-24">
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Address" %}</span>
+            <span style="font-size:14px;">{{ location.address }}</span>
+        </div>
+        {% if location.focal_point %}
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Focal Point" %}</span>
+            <span style="font-size:14px;">{{ location.focal_point }}</span>
+        </div>
+        {% endif %}
+        {% if location.google_pin %}
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Google Pin" %}</span>
+            <a href="{{ location.google_pin }}" target="_blank" rel="noopener" style="font-size:14px;">{% trans "Open in Google Maps" %}</a>
+        </div>
+        {% endif %}
+        <div>
+            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Total Units" %}</span>
+            <span style="font-size:14px; font-weight:600;">{{ page_obj.paginator.count }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Units Section -->
+<div class="page-header">
+    <h2 style="font-size:20px; font-weight:600;">{% trans "Units" %}</h2>
+    {% if user.is_admin %}
+    <a href="/locations/{{ location.uuid }}/unit/create/" class="btn btn--primary">{% trans "+ Add Unit" %}</a>
+    {% endif %}
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    {% if page_obj %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Unit Name" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Area (sqm)" %}</th>
+                {% if user.is_admin %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for unit in page_obj %}
+            <tr class="clickable" onclick="window.location.href='/locations/{{ location.uuid }}/units/{{ unit.uuid }}/'">
+                <td data-label="{% trans "Unit Name" %}">
+                    <a href="/locations/{{ location.uuid }}/units/{{ unit.uuid }}/">{{ unit.name }}</a>
+                </td>
+                <td data-label="{% trans "Type" %}">
+                    <span class="badge badge--{{ unit.unit_type }}">{{ unit.get_unit_type_display }}</span>
+                </td>
+                <td data-label="{% trans "Status" %}">
+                    {% if unit.is_leased %}
+                    <span class="badge badge--leased">{% trans "Leased" %}</span>
+                    {% else %}
+                    <span class="badge badge--vacant">{% trans "Vacant" %}</span>
+                    {% endif %}
+                </td>
+                <td data-label="{% trans "Area (sqm)" %}">{{ unit.sqm }} m²</td>
+                {% if user.is_admin %}
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8">
+                        <a href="/locations/{{ location.uuid }}/unit/{{ unit.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if user.is_super_user %}
+                        <form action="/locations/{{ location.uuid }}/unit/{{ unit.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{% if user.is_admin %}4{% else %}3{% endif %}" class="text-center" style="padding:32px; color:var(--text-secondary);">
+                    {% trans "No units yet." %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        <span class="pagination__info">
+            {% blocktrans with number=page_obj.number pages=page_obj.paginator.num_pages %}
+                Page {{ number }} of {{ pages }}
+            {% endblocktrans %}
+        </span>
+        <div class="pagination__nav">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn--secondary btn--small">{% trans "Previous" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Previous" %}</span>
+            {% endif %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn--secondary btn--small">{% trans "Next" %}</a>
+            {% else %}
+            <span class="btn btn--secondary btn--small" disabled>{% trans "Next" %}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center" style="padding:48px 16px; color:var(--text-secondary);">
+        {% trans "No units found. Click '+ Add Unit' to create one." %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

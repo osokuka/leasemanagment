@@ -1,0 +1,91 @@
+# ============================================================
+# Production docker-compose — pairs with Nginx Proxy Manager
+# ============================================================
+
+services:
+  # ── PostgreSQL ──
+  db:
+    image: postgres:16-alpine
+    container_name: bldg_mgm_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bldg_mgm_net
+
+  # ── Django + Gunicorn ──
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: bldg_mgm_web
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py compilemessages &&
+             gunicorn --bind 0.0.0.0:8000 --workers 4 --threads 2 --worker-class gthread --timeout 120 --keep-alive 5 --access-logfile - --error-logfile - --log-level info config.wsgi:application"
+    expose:
+      - "8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "0"
+      KESCO_SYNC_INTERVAL_SECONDS: ${KESCO_SYNC_INTERVAL_SECONDS:-259200}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bldg_mgm_net
+      - npm_default   # Required: Nginx Proxy Manager default network
+
+  # ── KESCO Sync Worker (optional) ──
+  kesco-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: bldg_mgm_kesco_sync
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py sync_kesco_meters --loop"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "0"
+      KESCO_SYNC_INTERVAL_SECONDS: ${KESCO_SYNC_INTERVAL_SECONDS:-259200}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bldg_mgm_net
+    profiles:
+      - integrations
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  bldg_mgm_net:
+    driver: bridge
+  npm_default:
+    external: true   # Created by Nginx Proxy Manager

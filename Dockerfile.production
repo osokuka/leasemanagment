@@ -1,0 +1,52 @@
+# ============================================================
+# Production Dockerfile — Gunicorn (Nginx Proxy Manager handles SSL/reverse proxy)
+# ============================================================
+
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    DJANGO_SETTINGS_MODULE=config.settings.production
+
+WORKDIR /app
+
+# Install runtime deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    gettext \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+COPY . .
+
+# Collect static files
+RUN python manage.py collectstatic --noinput --clear
+
+# Migrate on startup (handled by entrypoint or separate service)
+# Static files served via whitenoise (no separate nginx needed)
+
+EXPOSE 8000
+
+# Non-root user
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser && \
+    chown -R appuser:appgroup /app && \
+    chmod -R 755 /app
+
+USER appuser
+
+# Gunicorn: 4 workers, gthread for async, 120s timeout for KESCO sync
+CMD ["gunicorn", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--threads", "2", \
+     "--worker-class", "gthread", \
+     "--timeout", "120", \
+     "--keep-alive", "5", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "--log-level", "info", \
+     "config.wsgi:application"]

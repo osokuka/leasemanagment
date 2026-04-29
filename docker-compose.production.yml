@@ -1,5 +1,5 @@
 # ============================================================
-# Production docker-compose — pairs with Nginx Proxy Manager
+# Production docker-compose — includes Nginx Proxy Manager
 # ============================================================
 
 services:
@@ -50,7 +50,24 @@ services:
         condition: service_healthy
     networks:
       - bldg_mgm_net
-      - npm_default   # Required: Nginx Proxy Manager default network
+      - npm_proxy
+
+  # ── Nginx Proxy Manager ──
+  npm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: bldg_mgm_npm
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    environment:
+      DISABLE_IPV6: 'true'
+    networks:
+      - npm_proxy
 
   # ── KESCO Sync Worker (optional) ──
   kesco-sync:
@@ -83,9 +100,13 @@ services:
 volumes:
   postgres_data:
     driver: local
+  npm_data:
+    driver: local
+  npm_letsencrypt:
+    driver: local
 
 networks:
   bldg_mgm_net:
     driver: bridge
-  npm_default:
-    external: true   # Created by Nginx Proxy Manager
+  npm_proxy:
+    driver: bridge

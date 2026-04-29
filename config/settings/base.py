@@ -19,7 +19,9 @@ ALLOWED_HOSTS = [
     'bm.prosolutions-ks.com',
     'bibaj-management.com',
     'www.bibaj-management.com',
+    '178.238.225.206',
 ]
+# Allow additional hosts from environment
 ALLOWED_HOSTS += os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
 ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 

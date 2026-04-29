@@ -13,7 +13,7 @@
     <div class="sale-filters__tabs">
         <a href="?{% if search_query %}q={{ search_query }}{% endif %}"
            class="btn btn--small {% if not status_filter %}btn--primary{% else %}btn--secondary{% endif %}">
-            {% trans "Krejt" %} ({{ summary.for_sale|add:summary.reserved|add:summary.sold_partial|add:summary.sold_paid }})
+            {% trans "Të gjitha" %} ({{ summary.for_sale|add:summary.reserved|add:summary.sold_partial|add:summary.sold_paid }})
         </a>
         <a href="?status=for_sale{% if search_query %}&q={{ search_query }}{% endif %}"
            class="btn btn--small {% if status_filter == 'for_sale' %}btn--primary{% else %}btn--secondary{% endif %}">

@@ -2044,9 +2044,6 @@ msgstr "Shitjet"
 msgid "Sale Report"
 msgstr "Raporti i Shitjes"
 
-msgid "Print / PDF"
-msgstr "Printo / PDF"
-
 msgid "Back to Sales"
 msgstr "Kthehu te Shitjet"
 
@@ -2109,6 +2106,75 @@ msgstr "Pagesa e shitjes u fshi me sukses."
 
 msgid "Search by unit, buyer, or location"
 msgstr "Kërko sipas njësisë, blerësit ose vendndodhjes"
+
+msgid "Search unit, buyer, location"
+msgstr "Kërko sipas njësisë, blerësit ose vendndodhjes"
+
+msgid "Të gjitha"
+msgstr "Të gjitha"
+
+msgid "Për Shitje"
+msgstr "Për Shitje"
+
+msgid "E Rezervuar"
+msgstr "E Rezervuar"
+
+msgid "E Shitur (Pjesërisht)"
+msgstr "E Shitur (Pjesërisht)"
+
+msgid "E Shitur (Paguar)"
+msgstr "E Shitur (Paguar)"
+
+msgid "Kërko sipas njësisë, blerësit ose vendndodhjes..."
+msgstr "Kërko sipas njësisë, blerësit ose vendndodhjes..."
+
+msgid "Pastro"
+msgstr "Pastro"
+
+msgid "Njësia"
+msgstr "Njësia"
+
+msgid "Vendndodhja"
+msgstr "Vendndodhja"
+
+msgid "Lloji"
+msgstr "Lloji"
+
+msgid "Çmimi i Shitjes"
+msgstr "Çmimi i Shitjes"
+
+msgid "Blerësi"
+msgstr "Blerësi"
+
+msgid "Paguar"
+msgstr "Paguar"
+
+msgid "Borxhi"
+msgstr "Borxhi"
+
+msgid "Gjendja"
+msgstr "Gjendja"
+
+msgid "Veprime"
+msgstr "Veprime"
+
+msgid "Print"
+msgstr "Print"
+
+msgid "Redakto"
+msgstr "Redakto"
+
+msgid "Faqja {{ number }} nga {{ pages }}"
+msgstr "Faqja {{ number }} nga {{ pages }}"
+
+msgid "E kaluara"
+msgstr "E kaluara"
+
+msgid "Tjetra"
+msgstr "Tjetra"
+
+msgid "Nuk ka njësi për shitje aktualisht."
+msgstr "Nuk ka njësi për shitje aktualisht."
 
 #~ msgid "Payment stipulation"
 #~ msgstr "Kusht për pagesën"

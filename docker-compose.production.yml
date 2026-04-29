@@ -33,8 +33,7 @@ services:
       sh -c "python manage.py migrate &&
              python manage.py compilemessages &&
              gunicorn --bind 0.0.0.0:8000 --workers 4 --threads 2 --worker-class gthread --timeout 120 --keep-alive 5 --access-logfile - --error-logfile - --log-level info config.wsgi:application"
-    expose:
-      - "8000"
+    # No ports exposed — only accessible via npm_proxy network
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       POSTGRES_DB: ${POSTGRES_DB}

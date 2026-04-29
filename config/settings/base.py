@@ -13,26 +13,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Core settings
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-me')
 DEBUG = os.environ.get('DEBUG', '0') == '1'
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'bm.prosolutions-ks.com',
-    'bibaj-management.com',
-    'www.bibaj-management.com',
-    '178.238.225.206',
-]
-# Allow additional hosts from environment
-ALLOWED_HOSTS += os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
-ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
-# CSRF trusted origins for production domains
-CSRF_TRUSTED_ORIGINS = [
-    'https://bm.prosolutions-ks.com',
-    'https://bibaj-management.com',
-    'https://www.bibaj-management.com',
-    'http://localhost:8800',
-    'http://127.0.0.1:8800',
-]
+# Allowed hosts — loaded from env variable in production.
+# Falls back to localhost for local dev.
+_DEFAULT_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [h.strip() for h in _DEFAULT_HOSTS.split(',') if h.strip()]
+
+# Internal Docker service names (reachable only from NPM proxy on Docker network)
+ALLOWED_HOSTS += ['web', 'bldg_mgm_web']
+
+# CSRF trusted origins — loaded from env for production.
+_DEFAULT_ORIGINS = os.environ.get(
+    'DJANGO_CSRF_TRUSTED_ORIGINS',
+    'https://bibaj-management.com,https://www.bibaj-management.com,http://localhost:8800,http://127.0.0.1:8800'
+)
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in _DEFAULT_ORIGINS.split(',') if o.strip()]
 
 # Application definition
 INSTALLED_APPS = [

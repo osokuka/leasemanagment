@@ -229,6 +229,7 @@ class Command(BaseCommand):
 
     def fetch_user_data(self, user_id, token):
         url = os.environ.get('KESCO_USER_DATA_URL_TEMPLATE', 'https://fatura.kesco-energy.com/api/Account/user-debitors')
+        self.stdout.write(self.style.HTTP_SUCCESS(f'  → GET {url}'))
         request = Request(
             url,
             headers={
@@ -239,8 +240,15 @@ class Command(BaseCommand):
         )
         try:
             with urlopen(request, timeout=30) as response:
-                return json.loads(response.read().decode('utf-8'))
+                raw = response.read().decode('utf-8')
+                self.stdout.write(self.style.SUCCESS(f'  ← HTTP {response.status} — {len(raw)} bytes'))
+                payload = json.loads(raw)
+                # Log full payload for debugging
+                self.stdout.write(self.style.HTTP_SUCCESS(f'  📦 RAW PAYLOAD: {json.dumps(payload, indent=2)[:2000]}'))
+                return payload
         except HTTPError as exc:
+            body = exc.read().decode('utf-8', errors='replace') if hasattr(exc, 'read') else ''
+            self.stdout.write(self.style.ERROR(f'  ✗ HTTP {exc.code}: {body[:500]}'))
             raise CommandError(f'KESCO request failed for user_id={user_id}: HTTP {exc.code}') from exc
         except URLError as exc:
             raise CommandError(f'KESCO request failed for user_id={user_id}: {exc.reason}') from exc
@@ -250,8 +258,18 @@ class Command(BaseCommand):
         debitors = data.get('debitors', [])
         if isinstance(debitors, dict):
             debitors = [debitors]
+        
+        self.stdout.write(self.style.SUCCESS(f'  📋 Found {len(debitors)} debitor(s) in payload'))
+        
         for debitor in debitors:
             if isinstance(debitor, dict):
+                debitor_id = debitor.get('ElDebitorId', 'N/A')
+                agency_id = debitor.get('AgencyId', 'N/A')
+                total_debt = debitor.get('TotalDebt', 'N/A')
+                last_due = debitor.get('LastDueDate', 'N/A')
+                self.stdout.write(self.style.HTTP_SUCCESS(
+                    f'    ⚡ Debitor: {agency_id}{debitor_id} | Debt: {total_debt} | Due: {last_due}'
+                ))
                 yield debitor, timezone.now()
 
     def parse_source_timestamp(self, value):
@@ -281,17 +299,28 @@ class Command(BaseCommand):
         orphan = None
         created = False
 
+        self.stdout.write(f'  🔍 Looking for meter with kesco_debitor_id={debitor_id}...')
+
         # Priority 1: Find meter explicitly linked by kesco_debitor_id
         meter = Meter.objects.filter(kesco_debitor_id=debitor_id).first()
+        if meter:
+            self.stdout.write(self.style.SUCCESS(f'    ✓ Found existing meter: {meter.name} (pk={meter.pk})'))
+        else:
+            self.stdout.write(f'    ✗ No meter found with kesco_debitor_id={debitor_id}')
 
         # Priority 2: Fallback — find orphan created by earlier sync
         if meter is None:
             orphan = Meter.objects.filter(serial_number=f"KESCO-{debitor_id}").first()
+            if orphan:
+                self.stdout.write(self.style.WARNING(f'    ⚠ Found orphan meter: {orphan.name} (pk={orphan.pk})'))
+            else:
+                self.stdout.write(f'    ✗ No orphan found with serial_number=KESCO-{debitor_id}')
 
         if meter is None and orphan is None:
             # Create new meter under holding location
             holding_unit = self.get_holding_unit()
             created = True
+            self.stdout.write(self.style.HTTP_SUCCESS(f'    ➕ Creating new meter: {meter_name}'))
             meter = Meter.objects.create(
                 unit=holding_unit,
                 name=meter_name,
@@ -303,6 +332,7 @@ class Command(BaseCommand):
                 kesco_address=balance.get('DebitorAddress') or None,
                 kesco_tariff_group=balance.get('TariffGroup') or None,
             )
+            self.stdout.write(self.style.SUCCESS(f'    ✓ Meter created: pk={meter.pk}'))
 
         # Merge orphan into linked meter if both exist
         if meter is not None and orphan is not None and orphan.pk != meter.pk:
@@ -372,6 +402,7 @@ class Command(BaseCommand):
                 'kesco_full_name', 'kesco_address', 'kesco_tariff_group',
                 'kesco_last_due_date', 'updated_at',
             ])
+            self.stdout.write(self.style.SUCCESS(f'    ✓ Meter fields updated'))
 
         # Extract billing month/year from LastDueDate
         if last_due_date:
@@ -380,8 +411,9 @@ class Command(BaseCommand):
             month, year = source_timestamp.month, source_timestamp.year
 
         amount = self.decimal_or_zero(balance.get('TotalDebt'))
+        self.stdout.write(f'  💰 Creating/updating ledger: meter={meter.name}, month={month}/{year}, amount={amount}')
 
-        ledger, _ = MeterLedger.objects.update_or_create(
+        ledger, ledger_created = MeterLedger.objects.update_or_create(
             meter=meter,
             month=month,
             year=year,
@@ -391,6 +423,12 @@ class Command(BaseCommand):
                 'settled_at': source_timestamp.date() if amount == 0 else None,
             },
         )
+        
+        if ledger_created:
+            self.stdout.write(self.style.SUCCESS(f'    ✓ Ledger CREATED (pk={ledger.pk})'))
+        else:
+            self.stdout.write(f'    ℹ Ledger EXISTS (pk={ledger.pk}), updated billed_amount={amount}')
+        
         return created
 
     def get_holding_unit(self):

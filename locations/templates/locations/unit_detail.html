@@ -24,13 +24,17 @@
         </div>
         <div>
             <span class="summary-label">{% trans "Status" %}</span>
-            {% if unit.is_leased %}
-            <span class="badge badge--leased">{% trans "Leased" %}</span>
-            {% elif unit.is_for_sale %}
-            <span class="badge badge--{{ unit.sale_status }}">{{ unit.get_sale_status_display }}</span>
-            {% else %}
-            <span class="badge badge--vacant">{% trans "Vacant" %}</span>
-            {% endif %}
+            <span class="flex gap-8 flex-wrap">
+                {% if unit.is_leased %}
+                <span class="badge badge--leased">{% trans "Leased" %}</span>
+                {% endif %}
+                {% if unit.is_for_sale %}
+                <span class="badge badge--{{ unit.sale_status }}">{{ unit.get_sale_status_display }}</span>
+                {% endif %}
+                {% if not unit.is_leased and not unit.is_for_sale %}
+                <span class="badge badge--vacant">{% trans "Vacant" %}</span>
+                {% endif %}
+            </span>
         </div>
         <div>
             <span class="summary-label">{% trans "Area" %}</span>
@@ -239,6 +243,12 @@
             <span>{{ unit.sale_agreement_date }}</span>
         </div>
         {% endif %}
+        {% if unit.installment_count %}
+        <div>
+            <span class="summary-label">{% trans "Installments" %}</span>
+            <span>{{ unit.installment_count }}{% if unit.installment_start_date %} — {% trans "Start" %}: {{ unit.installment_start_date }}{% endif %}{% if unit.installment_amount %} — €{{ unit.installment_amount }}/{% trans "mo" %}{% endif %}</span>
+        </div>
+        {% endif %}
         {% if unit.sale_contract %}
         <div>
             <span class="summary-label">{% trans "Contract" %}</span>
@@ -299,12 +309,12 @@
             <tr>
                 <td data-label="{% trans "#" %}"><strong>{{ sp.installment_number }}</strong></td>
                 <td data-label="{% trans "Due Date" %}">{{ sp.due_date }}</td>
-                <td data-label="{% trans "Amount Due" %}">€{{ sp.amount_due|floatformat:2 }}</td>
+                <td data-label="{% trans "Amount Due" %}">€{{ sp.display_amount_due|floatformat:2 }}</td>
                 <td data-label="{% trans "Amount Paid" %}">
-                    {% if sp.amount_paid > 0 %}€{{ sp.amount_paid|floatformat:2 }}{% else %}—{% endif %}
+                    {% if sp.amount_paid > 0 %}<span class="text-success">€{{ sp.amount_paid|floatformat:2 }}</span>{% else %}—{% endif %}
                 </td>
                 <td data-label="{% trans "Balance" %}">
-                    <strong class="{% if sp.running_balance > 0 %}text-error{% elif sp.running_balance < 0 %}text-success{% else %}text-neutral{% endif %}">
+                    <strong class="{% if sp.running_balance < 0 %}text-error{% elif sp.running_balance > 0 %}text-success{% else %}text-neutral{% endif %}">
                         €{{ sp.running_balance|floatformat:2 }}
                     </strong>
                 </td>

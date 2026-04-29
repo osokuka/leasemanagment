@@ -176,25 +176,99 @@
     {% if recent_syncs %}
     <div class="dashboard-section">
         <div class="dashboard-section__header">
-            <h2>{% trans "Recent Meter Ledgers" %}</h2>
+            <h2>{% trans "Recent Meter Readings" %}</h2>
         </div>
         <table class="table">
             <thead>
                 <tr>
                     <th>{% trans "Meter" %}</th>
+                    <th>{% trans "KESCO Debitor ID" %}</th>
+                    <th>{% trans "Full Name" %}</th>
                     <th>{% trans "Period" %}</th>
                     <th>{% trans "Billed Amount" %}</th>
-                    <th>{% trans "Created" %}</th>
+                    <th>{% trans "Settled" %}</th>
+                    <th>{% trans "Synced At" %}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for ledger in recent_syncs %}
                 <tr>
-                    <td data-label="{% trans "Meter" %}">{{ ledger.meter.name }}</td>
+                    <td data-label="{% trans "Meter" %}">
+                        <a href="/locations/{{ ledger.meter.unit.location.uuid }}/units/{{ ledger.meter.unit.uuid }}/">
+                            <strong>{{ ledger.meter.name }}</strong>
+                        </a>
+                    </td>
+                    <td data-label="{% trans "KESCO Debitor ID" %}"><code>{{ ledger.meter.kesco_debitor_id }}</code></td>
+                    <td data-label="{% trans "Full Name" %}">{{ ledger.meter.kesco_full_name|default:"—" }}</td>
                     <td data-label="{% trans "Period" %}">{{ ledger.month }}/{{ ledger.year }}</td>
-                    <td data-label="{% trans "Billed Amount" %}"><strong>€{{ ledger.billed_amount|default:"0" }}</strong></td>
-                    <td data-label="{% trans "Created" %}">{{ ledger.created_at|date:"m-d H:i" }}</td>
+                    <td data-label="{% trans "Billed Amount" %}">
+                        <strong class="{% if ledger.billed_amount > 0 %}text-error{% else %}text-success{% endif %}">
+                            €{{ ledger.billed_amount|floatformat:2 }}
+                        </strong>
+                    </td>
+                    <td data-label="{% trans "Settled" %}">
+                        {% if ledger.settled_at %}
+                        <span class="badge badge--paid">{% trans "Yes" %}</span>
+                        {% elif ledger.billed_amount > 0 %}
+                        <span class="badge badge--unpaid">{% trans "No" %}</span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td data-label="{% trans "Synced At" %}">{{ ledger.created_at|date:"m-d H:i" }}</td>
                 </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- KESCO Meter Status Summary -->
+    {% if kesco_meter_status %}
+    <div class="dashboard-section">
+        <div class="dashboard-section__header">
+            <h2>{% trans "KESCO Meter Status" %}</h2>
+            <a href="/locations/?q=KESCO" class="btn btn--secondary btn--small">{% trans "View All Meters" %}</a>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Meter" %}</th>
+                    <th>{% trans "Debitor ID" %}</th>
+                    <th>{% trans "Address" %}</th>
+                    <th>{% trans "Last Due Date" %}</th>
+                    <th>{% trans "Total Debt" %}</th>
+                    <th>{% trans "Tariff" %}</th>
+                    <th>{% trans "Linked Unit" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ledger in kesco_meter_status %}
+                {% with meter=ledger.meter %}
+                <tr>
+                    <td data-label="{% trans "Meter" %}">
+                        <a href="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/">
+                            <strong>{{ meter.name }}</strong>
+                        </a>
+                    </td>
+                    <td data-label="{% trans "Debitor ID" %}"><code>{{ meter.kesco_debitor_id }}</code></td>
+                    <td data-label="{% trans "Address" %}">{{ meter.kesco_address|default:"—" }}</td>
+                    <td data-label="{% trans "Last Due Date" %}">
+                        {% if meter.kesco_last_due_date %}{{ meter.kesco_last_due_date|date:"d-M-Y" }}{% else %}—{% endif %}
+                    </td>
+                    <td data-label="{% trans "Total Debt" %}">
+                        <strong class="{% if ledger.billed_amount > 0 %}text-error{% else %}text-success{% endif %}">
+                            €{{ ledger.billed_amount|floatformat:2 }}
+                        </strong>
+                    </td>
+                    <td data-label="{% trans "Tariff" %}">{{ meter.kesco_tariff_group|default:"—" }}</td>
+                    <td data-label="{% trans "Linked Unit" %}">
+                        {% if meter.unit %}
+                            <a href="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/">
+                                {{ meter.unit.name }}
+                            </a>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endwith %}
                 {% endfor %}
             </tbody>
         </table>

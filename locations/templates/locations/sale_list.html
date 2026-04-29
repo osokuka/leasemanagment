@@ -6,6 +6,9 @@
 {% block content %}
 <div class="page-header">
     <h1>{% trans "Sales" %}</h1>
+    {% if user.is_admin %}
+    <a href="/locations/" class="btn btn--primary">{% trans "+ Shitja e Re" %}</a>
+    {% endif %}
 </div>
 
 <!-- Status Filter Tabs -->

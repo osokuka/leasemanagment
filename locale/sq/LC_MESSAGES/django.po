@@ -1390,7 +1390,7 @@ msgstr "Totali i Faturuar"
 #: locations/templates/locations/lease_ledger_list.html:32
 #: locations/templates/locations/lease_ledger_print.html:168
 msgid "Total Paid"
-msgstr "Totali i Pagar"
+msgstr "Totali Paguar"
 
 #: locations/templates/locations/lease_ledger_list.html:36
 #: locations/templates/locations/lease_ledger_print.html:172
@@ -1416,7 +1416,7 @@ msgstr "Borxhi"
 #: locations/templates/locations/unit_detail.html:188
 #: locations/templates/locations/unit_detail.html:202
 msgid "Balance"
-msgstr "Borxhi"
+msgstr "Bilanci"
 
 #: locations/templates/locations/lease_ledger_list.html:71
 #: locations/templates/locations/lease_ledger_list.html:110
@@ -2057,7 +2057,7 @@ msgid "Installments"
 msgstr "Këste"
 
 msgid "Property"
-msgstr "Pasuri"
+msgstr "Njësia"
 
 msgid "Agreement Date"
 msgstr "Data e Marrëveshjes"
@@ -2069,7 +2069,7 @@ msgid "Contact"
 msgstr "Kontakti"
 
 msgid "Outstanding"
-msgstr "E Pambetur"
+msgstr "Shuma e Mbetur"
 
 msgid "Sale Details"
 msgstr "Detajet e Shitjes"
@@ -2175,6 +2175,55 @@ msgstr "Tjetra"
 
 msgid "Nuk ka njësi për shitje aktualisht."
 msgstr "Nuk ka njësi për shitje aktualisht."
+
+# Sale print report — only strings NOT already defined above
+msgid "Date"
+msgstr "Data"
+
+msgid "Payment Schedule"
+msgstr "Plani i Pagesave"
+
+msgid "Due Date"
+msgstr "Data e Skadimit"
+
+msgid "Amount Due"
+msgstr "Shuma e Detyrueshme"
+
+msgid "Amount Paid"
+msgstr "Shuma e Paguar"
+
+msgid "Ref"
+msgstr "Ref"
+
+msgid "Number of Installments"
+msgstr "Numri i Kësteve"
+
+msgid "Installment Start Date"
+msgstr "Data e Fillimit të Kësteve"
+
+msgid "Amount per Installment (€)"
+msgstr "Shuma për Këst (€)"
+
+msgid "Start"
+msgstr "Fillimi"
+
+msgid "mo"
+msgstr "muaj"
+
+msgid "Amount/Inst."
+msgstr "Shuma/Këst"
+
+msgid "Units sold (unpaid or partially paid)"
+msgstr "Njësitë e shitura (të papaguara ose pjesërisht të paguara)"
+
+msgid "Units on Sale"
+msgstr "Njësitë në Shitje"
+
+msgid "Total number of payment installments"
+msgstr "Numri total i kësteve të pagesës"
+
+msgid "Optional — leave blank to calculate from sale price"
+msgstr "Opsionale — lini bosh për ta llogaritur nga çmimi i shitjes"
 
 #~ msgid "Payment stipulation"
 #~ msgstr "Kusht për pagesën"

@@ -44,14 +44,14 @@
             <div class="kpi-card__label">{% trans "Active Leases" %}</div>
         </a>
 
-        <a href="{% url 'locations:location_list' %}" class="kpi-card kpi-card--success">
+        <a href="{% url 'sale_list' %}" class="kpi-card kpi-card--warning" style="background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-secondary));">
             <div class="kpi-card__icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 21H21M3 10H21M5 6L12 3L19 6M4 10V21M20 10V21M8 14H9V18H8V14ZM12 14H13V18H12V14ZM16 14H17V18H16V14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 17L8 3h4l5 14H3ZM6 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
-            <div class="kpi-card__number">{{ total_units_count }}</div>
-            <div class="kpi-card__label">{% trans "Total Units" %}</div>
+            <div class="kpi-card__number">{{ for_sale_count|add:reserved_count|add:sold_partial_count }}</div>
+            <div class="kpi-card__label">{% trans "Units sold (unpaid or partially paid)" %}</div>
         </a>
     </div>
 
@@ -103,6 +103,62 @@
                 <div class="kpi-card__label text-strong">{{ lease.name }}</div>
                 <div class="kpi-card__sum">€{{ lease.monthly_payment|floatformat:2 }}/{% trans "month" %}</div>
                 <div class="kpi-card__sum"><span class="badge badge--danger">{% trans "Debt" %}</span></div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Units on Sale Section -->
+    {% if sale_units %}
+    <div class="dashboard-section">
+        <div class="dashboard-section__header">
+            <h2>{% trans "Units sold (unpaid or partially paid)" %}</h2>
+            <a href="{% url 'sale_list' %}" class="btn btn--secondary btn--small">{% trans "View All" %}</a>
+        </div>
+
+        <!-- Desktop: Table -->
+        <div class="kpi-table-desktop">
+            <table class="table dashboard-table">
+                <thead>
+                    <tr>
+                        <th>{% trans "Unit" %}</th>
+                        <th>{% trans "Location" %}</th>
+                        <th>{% trans "Sale Price" %}</th>
+                        <th>{% trans "Balance" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in sale_units %}
+                    <tr class="clickable" onclick="window.location.href='{% url 'locations:unit_detail' location_uuid=u.location.uuid unit_uuid=u.uuid %}'">
+                        <td data-label="{% trans 'Unit' %}"><strong>{{ u.name }}</strong></td>
+                        <td data-label="{% trans 'Location' %}">{{ u.location.name }}</td>
+                        <td data-label="{% trans 'Sale Price' %}">€{{ u.sale_price|default:"0"|floatformat:2 }}</td>
+                        <td data-label="{% trans 'Balance' %}">
+                            {% if u.sale_balance and u.sale_balance > 0 %}
+                                <strong class="text-error">-€{{ u.sale_balance|floatformat:2 }}</strong>
+                            {% elif u.sale_balance and u.sale_balance < 0 %}
+                                <strong class="text-success">€{{ u.sale_balance|floatformat:2 }}</strong>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td data-label="{% trans 'Status' %}"><span class="badge badge--{{ u.sale_status }}">{{ u.get_sale_status_display }}</span></td>
+                        <td><a href="{% url 'locations:unit_detail' location_uuid=u.location.uuid unit_uuid=u.uuid %}" class="btn btn--secondary btn--small">{% trans "View" %} →</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile: Card Grid -->
+        <div class="kpi-grid">
+            {% for u in sale_units %}
+            <a href="{% url 'locations:unit_detail' location_uuid=u.location.uuid unit_uuid=u.uuid %}" class="kpi-card">
+                <div class="kpi-card__number text-strong">{{ u.name }}</div>
+                <div class="kpi-card__label">{{ u.location.name }}</div>
+                <div class="kpi-card__sum">€{{ u.sale_price|default:"0"|floatformat:2 }}</div>
+                <div class="kpi-card__sum"><span class="badge badge--{{ u.sale_status }}">{{ u.get_sale_status_display }}</span></div>
             </a>
             {% endfor %}
         </div>
@@ -166,7 +222,7 @@
     {% endif %}
 
     <!-- Empty State -->
-    {% if not unpaid_leases and not units_with_meter_debt %}
+    {% if not unpaid_leases and not units_with_meter_debt and not sale_units %}
     <div class="dashboard-empty">
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="32" cy="32" r="28" stroke="var(--border-color)" stroke-width="2"/>

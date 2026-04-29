@@ -402,6 +402,25 @@ class Unit(models.Model):
         null=True,
         verbose_name=_('Sale Agreement Date'),
     )
+    installment_count = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_('Number of Installments'),
+        help_text=_('Total number of payment installments'),
+    )
+    installment_start_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_('Installment Start Date'),
+    )
+    installment_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name=_('Amount per Installment (€)'),
+        help_text=_('Optional — amount for each installment'),
+    )
     sale_notes = models.TextField(
         blank=True,
         null=True,

@@ -33,7 +33,9 @@ class UnitForm(forms.ModelForm):
         model = Unit
         fields = ['name', 'sqm', 'unit_type', 'lease', 'sale_status', 'sale_price',
                   'buyer_name', 'buyer_contact', 'buyer_email', 'buyer_phone',
-                  'sale_contract', 'sale_agreement_date', 'sale_notes']
+                  'sale_contract', 'sale_agreement_date',
+                  'installment_count', 'installment_start_date', 'installment_amount',
+                  'sale_notes']
         labels = {
             'name': _('Unit Name'),
             'sqm': _('Area (sqm)'),
@@ -47,10 +49,18 @@ class UnitForm(forms.ModelForm):
             'buyer_phone': _('Buyer Phone'),
             'sale_contract': _('Sale Contract'),
             'sale_agreement_date': _('Sale Agreement Date'),
+            'installment_count': _('Number of Installments'),
+            'installment_start_date': _('Installment Start Date'),
+            'installment_amount': _('Amount per Installment (€)'),
             'sale_notes': _('Sale Notes'),
+        }
+        help_texts = {
+            'installment_count': _('Total number of payment installments'),
+            'installment_amount': _('Optional — leave blank to calculate from sale price'),
         }
         widgets = {
             'sale_agreement_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'installment_start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):

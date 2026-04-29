@@ -176,7 +176,7 @@
         </div>
         <div class="fin-bar__cell">
             <div class="fin-bar__label">{% trans "Remaining" %}</div>
-            <div class="fin-bar__value {% if remaining_balance > 0 %}fin-bar__value--danger{% else %}fin-bar__value--success{% endif %}">
+            <div class="fin-bar__value {% if remaining_balance < 0 %}fin-bar__value--danger{% else %}fin-bar__value--success{% endif %}">
                 €{{ remaining_balance|floatformat:2 }}
             </div>
         </div>
@@ -196,6 +196,12 @@
                 <tr><td>{% trans "Type" %}</td><td>{{ unit.get_unit_type_display }}</td></tr>
                 <tr><td>{% trans "Area" %}</td><td>{{ unit.sqm }} m²</td></tr>
                 <tr><td>{% trans "Agreement Date" %}</td><td>{% if unit.sale_agreement_date %}{{ unit.sale_agreement_date|date:"d-M-Y" }}{% else %}—{% endif %}</td></tr>
+                {% if unit.installment_count %}
+                <tr><td>{% trans "Installments" %}</td><td>{{ unit.installment_count }}{% if unit.installment_start_date %} ({{ unit.installment_start_date|date:"d-M-Y" }}){% endif %}</td></tr>
+                {% endif %}
+                {% if unit.installment_amount %}
+                <tr><td>{% trans "Amount/Inst." %}</td><td>€{{ unit.installment_amount|floatformat:2 }}</td></tr>
+                {% endif %}
             </table>
         </div>
         <div class="detail-section">
@@ -235,10 +241,10 @@
                 <tr>
                     <td><strong>{{ sp.installment_number }}</strong></td>
                     <td>{{ sp.due_date|date:"d-M-Y" }}</td>
-                    <td class="num">€{{ sp.amount_due|floatformat:2 }}</td>
-                    <td class="num">{% if sp.amount_paid > 0 %}€{{ sp.amount_paid|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td class="num">€{{ sp.display_amount_due|floatformat:2 }}</td>
+                    <td class="num" style="color:var(--p-success);">{% if sp.amount_paid > 0 %}€{{ sp.amount_paid|floatformat:2 }}{% else %}—{% endif %}</td>
                     <td class="num">
-                        <strong class="{% if sp.running_balance > 0 %}bal-positive{% else %}bal-settled{% endif %}">
+                        <strong class="{% if sp.running_balance < 0 %}bal-positive{% else %}bal-settled{% endif %}">
                             €{{ sp.running_balance|floatformat:2 }}
                         </strong>
                     </td>
@@ -251,7 +257,7 @@
         <div class="pay-summary">
             <div class="pay-summary__item">
                 <div class="pay-summary__label">{% trans "Total Due" %}</div>
-                <div class="pay-summary__value">€{{ total_due|floatformat:2 }}</div>
+                <div class="pay-summary__value">€{{ total_sale|floatformat:2 }}</div>
             </div>
             <div class="pay-summary__item">
                 <div class="pay-summary__label">{% trans "Total Paid" %}</div>
@@ -259,7 +265,7 @@
             </div>
             <div class="pay-summary__item">
                 <div class="pay-summary__label">{% trans "Outstanding" %}</div>
-                <div class="pay-summary__value" style="{% if remaining_balance > 0 %}color:var(--p-danger){% else %}color:var(--p-success){% endif %};">
+                <div class="pay-summary__value" style="{% if remaining_balance < 0 %}color:var(--p-danger){% else %}color:var(--p-success){% endif %};">
                     €{{ remaining_balance|floatformat:2 }}
                 </div>
             </div>

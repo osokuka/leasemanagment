@@ -18,24 +18,40 @@ from .models import KescoCredential, Meter, MeterLedger
 def kesco_dashboard(request):
     """KESCO integration dashboard showing credentials and sync status."""
     credentials = KescoCredential.objects.all().order_by('username')
-    
-    # Aggregate stats
-    total_meters = Meter.objects.filter(serial_number__isnull=False).count()
-    kesco_meters = Meter.objects.filter(
-        serial_number__isnull=False,
-        name__icontains='KESCO'
-    ).count()
-    
-    # Recent ledgers from KESCO sync
+
+    # Aggregate stats — KESCO meters are identified by kesco_debitor_id, not serial_number
+    total_meters = Meter.objects.count()
+    kesco_meters = Meter.objects.filter(kesco_debitor_id__isnull=False).count()
+
+    # Recent ledgers from KESCO sync — filter by meters that have KESCO data
     recent_syncs = MeterLedger.objects.filter(
-        meter__serial_number__isnull=False
-    ).order_by('-created_at')[:10]
-    
+        meter__kesco_debitor_id__isnull=False
+    ).select_related('meter').order_by('-created_at')[:20]
+
+    # Show latest ledger per KESCO meter for quick status
+    kesco_meter_status = []
+    if kesco_meters > 0:
+        from django.db.models import Max
+        latest_ledgers = MeterLedger.objects.filter(
+            meter__kesco_debitor_id__isnull=False
+        ).values('meter_id').annotate(
+            latest=Max('created_at')
+        ).order_by('-latest')[:10]
+
+        for entry in latest_ledgers:
+            ledger = MeterLedger.objects.filter(
+                meter_id=entry['meter_id'],
+                created_at=entry['latest']
+            ).select_related('meter').first()
+            if ledger:
+                kesco_meter_status.append(ledger)
+
     context = {
         'credentials': credentials,
         'total_meters': total_meters,
         'kesco_meters': kesco_meters,
         'recent_syncs': recent_syncs,
+        'kesco_meter_status': kesco_meter_status,
     }
     return render(request, 'locations/kesco/dashboard.html', context)
 

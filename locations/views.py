@@ -94,6 +94,27 @@ def dashboard(request):
     # KPI 4: Total Units
     total_units_count = Unit.objects.count()
 
+    # KPI 5: Sales — units with active sale status
+    for_sale_units = Unit.objects.filter(sale_status=SaleStatus.FOR_SALE).select_related('location').order_by('name')[:10]
+    reserved_units = Unit.objects.filter(sale_status=SaleStatus.RESERVED).select_related('location').order_by('name')[:10]
+    sold_partial_units = Unit.objects.filter(sale_status=SaleStatus.SOLD_PARTIAL).select_related('location').order_by('name')[:10]
+
+    for_sale_count = Unit.objects.filter(sale_status=SaleStatus.FOR_SALE).count()
+    reserved_count = Unit.objects.filter(sale_status=SaleStatus.RESERVED).count()
+    sold_partial_count = Unit.objects.filter(sale_status=SaleStatus.SOLD_PARTIAL).count()
+    sold_paid_count = Unit.objects.filter(sale_status=SaleStatus.SOLD_PAID).count()
+
+    # Calculate outstanding receivables from sold units
+    sold_units_with_balance = Unit.objects.filter(sale_status=SaleStatus.SOLD_PARTIAL)
+    total_receivables = Decimal('0')
+    for u in sold_units_with_balance:
+        bal = u.sale_balance or Decimal('0')
+        if bal > 0:
+            total_receivables += bal
+
+    # Combine all sale units for preview
+    all_sale_units = list(for_sale_units) + list(reserved_units) + list(sold_partial_units)
+
     context = {
         'unpaid_leases_count': unpaid_leases_count,
         'unpaid_total_sum': unpaid_total_sum,
@@ -102,6 +123,13 @@ def dashboard(request):
         'units_with_meter_debt': units_with_meter_debt[:20],
         'active_leases_count': active_leases_count,
         'total_units_count': total_units_count,
+        # Sales KPIs
+        'for_sale_count': for_sale_count,
+        'reserved_count': reserved_count,
+        'sold_partial_count': sold_partial_count,
+        'sold_paid_count': sold_paid_count,
+        'total_receivables': total_receivables,
+        'sale_units': all_sale_units[:10],
     }
     return render(request, 'locations/dashboard.html', context)
 
@@ -304,14 +332,18 @@ def unit_detail(request, location_uuid, unit_uuid):
             entry.effectively_paid = entry.balance_before < 0
         lease_ledgers.reverse()
 
-    # Sale payments
+    # Sale payments — calculate remaining balance progressively
     sale_payments = list(unit.sale_payments.all().order_by('due_date'))
-    # Compute running balance for sale payments
-    sale_balance = 0
+    total_sale = unit.sale_price or Decimal('0')
+    remaining = total_sale
+
     for sp in sale_payments:
-        sp.balance_before = sale_balance
-        sale_balance += (sp.amount_due or 0) - (sp.amount_paid or 0)
-        sp.running_balance = sale_balance
+        # Amount due for this row = remaining before this payment
+        sp.display_amount_due = remaining
+        paid = sp.amount_paid or Decimal('0')
+        remaining -= paid
+        # Running balance = what's left after this payment (negative = still owed)
+        sp.running_balance = -remaining
 
     return render(request, 'locations/unit_detail.html', {
         'unit': unit,
@@ -609,6 +641,12 @@ def lease_list(request):
 
     leases = Lease.objects.all()
     search_query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+
+    if status_filter == 'active':
+        leases = leases.filter(is_active=True)
+    elif status_filter == 'inactive':
+        leases = leases.filter(is_active=False)
 
     if search_query:
         leases = leases.filter(
@@ -621,9 +659,18 @@ def lease_list(request):
     paginator = Paginator(leases, LEASES_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+
+    # Summary counts
+    summary = {
+        'active': Lease.objects.filter(is_active=True).count(),
+        'inactive': Lease.objects.filter(is_active=False).count(),
+    }
+
     return render(request, 'locations/lease_list.html', {
         'page_obj': page_obj,
         'search_query': search_query,
+        'status_filter': status_filter,
+        'summary': summary,
     })
 
 
@@ -881,25 +928,27 @@ def sale_print(request, unit_uuid):
     unit = get_object_or_404(Unit, uuid=unit_uuid)
     payments = list(unit.sale_payments.all().order_by('due_date'))
 
-    balance = 0
-    total_due = Decimal('0')
+    total_sale = unit.sale_price or Decimal('0')
+    remaining = total_sale
     total_paid = Decimal('0')
-    for sp in payments:
-        sp.balance_before = balance
-        total_due += sp.amount_due or Decimal('0')
-        total_paid += sp.amount_paid or Decimal('0')
-        balance += (sp.amount_due or Decimal('0')) - (sp.amount_paid or Decimal('0'))
-        sp.running_balance = balance
 
-    remaining = unit.sale_balance or Decimal('0')
+    for sp in payments:
+        paid = sp.amount_paid or Decimal('0')
+        total_paid += paid
+        sp.display_amount_due = remaining
+        remaining -= paid
+        sp.running_balance = -remaining
+
+    # Negate remaining balance (client owes)
+    display_remaining = -remaining if remaining > 0 else Decimal('0')
     company = CompanyProfile.get_or_create_default()
 
     return render(request, 'locations/sale_print.html', {
         'unit': unit,
         'payments': payments,
-        'total_due': total_due,
+        'total_sale': total_sale,
         'total_paid': total_paid,
-        'remaining_balance': remaining,
+        'remaining_balance': display_remaining,
         'company': company,
         'now': __import__('datetime').date.today(),
     })

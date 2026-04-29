@@ -8,6 +8,8 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import path, include
 from locations import views as location_views
+from locations import kesco_views as location_kesco_views
+from locations import api_views as location_api_views
 from accounts import views as accounts_views
 
 urlpatterns = [
@@ -45,6 +47,21 @@ urlpatterns = [
     # Sales
     path('sales/', location_views.sale_list, name='sale_list'),
     path('sales/<uuid:unit_uuid>/print/', location_views.sale_print, name='sale_print'),
+
+    # KESCO Integration
+    path('locations/kesco/', location_kesco_views.kesco_dashboard, name='kesco_dashboard'),
+    path('locations/kesco/credentials/', location_kesco_views.kesco_credential_list, name='kesco_credential_list'),
+    path('locations/kesco/credentials/create/', location_kesco_views.kesco_credential_create, name='kesco_credential_create'),
+    path('locations/kesco/credentials/<uuid:uuid>/edit/', location_kesco_views.kesco_credential_edit, name='kesco_credential_edit'),
+    path('locations/kesco/credentials/<uuid:uuid>/delete/', location_kesco_views.kesco_credential_delete, name='kesco_credential_delete'),
+    path('locations/kesco/credentials/<uuid:uuid>/login/', location_kesco_views.kesco_credential_login_page, name='kesco_credential_login_page'),
+    path('locations/kesco/credentials/<uuid:uuid>/sync/', location_kesco_views.kesco_trigger_sync, name='kesco_trigger_sync'),
+    path('locations/kesco/sync-all/', location_kesco_views.kesco_trigger_sync_all, name='kesco_trigger_sync_all'),
+    path('locations/kesco/api/capture-token/', location_kesco_views.kesco_api_capture_token, name='kesco_api_capture_token'),
+    path('locations/kesco/api/save-token/<uuid:uuid>/', location_kesco_views.kesco_save_token, name='kesco_save_token'),
+
+    # KESCO API
+    path('locations/api/kesco/meters/upsert/', location_api_views.kesco_meter_upsert_api, name='kesco_meter_upsert_api'),
 ]
 
 if settings.DEBUG:

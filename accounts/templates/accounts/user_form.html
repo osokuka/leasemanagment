@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ title }} - Bibaj Menaxhment{% endblock %}
+{% block title %}{{ title }} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -13,6 +13,9 @@
     <div class="form-shell__intro">
         <span class="form-shell__eyebrow">{% trans "Account details" %}</span>
         <h2>{{ title }}</h2>
+        {% if editing_user %}
+        <p class="text-xs text-muted mt-8">{% trans "UUID" %}: <code>{{ editing_user.uuid }}</code></p>
+        {% endif %}
         <p>{% trans "Manage access, contact information, and role permissions for this user." %}</p>
     </div>
 
@@ -36,4 +39,81 @@
         </div>
     </form>
 </div>
+
+{% if editing_user and can_edit_profile %}
+<div class="form-shell mt-24">
+    <div class="form-shell__intro">
+        <span class="form-shell__eyebrow">{% trans "API access" %}</span>
+        <h2>{% trans "KESCO API Keys" %}</h2>
+        <p>{% trans "Generate least-privilege keys for external KESCO meter tools. Keys can insert and update meters and meter ledgers only." %}</p>
+    </div>
+
+    <form method="post" action="{% url 'accounts:user_api_key_create' editing_user.uuid %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="api-key-name">{% trans "Key Name" %}</label>
+            <input type="text" id="api-key-name" name="name" class="form-control" value="{% trans "KESCO external tool" %}">
+        </div>
+        <div class="form-group">
+            <label for="api-key-scope">{% trans "Scope" %}</label>
+            <select id="api-key-scope" name="scope" class="form-select">
+                {% for value, label in api_key_scopes %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-help">{% trans "Choose the narrowest scope needed by the external tool." %}</div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">{% trans "Generate API Key" %}</button>
+        </div>
+    </form>
+
+    <div class="card card--flush mt-16">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Scope" %}</th>
+                    <th>{% trans "Prefix" %}</th>
+                    <th>{% trans "Last Used" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key in api_keys %}
+                <tr>
+                    <td data-label="{% trans "Name" %}">{{ key.name }}</td>
+                    <td data-label="{% trans "Scope" %}"><code>{{ key.scope }}</code></td>
+                    <td data-label="{% trans "Prefix" %}"><code>{{ key.key_prefix }}</code></td>
+                    <td data-label="{% trans "Last Used" %}">{{ key.last_used_at|default:"-" }}</td>
+                    <td data-label="{% trans "Status" %}">
+                        {% if key.is_active %}
+                        <span class="badge badge--paid">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge badge--unpaid">{% trans "Revoked" %}</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="{% trans "Actions" %}">
+                        {% if key.is_active %}
+                        <form method="post" action="{% url 'accounts:user_api_key_revoke' editing_user.uuid key.uuid %}" class="d-inline"
+                              onsubmit="return confirm('{% trans "Revoke this API key?" %}')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Revoke" %}</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted">{% trans "No actions" %}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-state">{% trans "No API keys created for this user." %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

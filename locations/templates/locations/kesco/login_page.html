@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "KESCO Credential" %} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>{{ credential.username }}</h1>
+        <a href="{% url 'locations:kesco_credential_edit' credential.uuid %}" class="btn btn--secondary btn--small">
+            {% trans "Edit" %}
+        </a>
+    </div>
+
+    <div class="form-shell form-shell--wide">
+        <table class="credential-table">
+            <tr>
+                <th>{% trans "Token Status" %}</th>
+                <td>
+                    {% if credential.is_token_valid %}
+                        <span class="text-success">✓ {% trans "Valid" %}</span>
+                    {% else %}
+                        <span class="text-error">✗ {% trans "Not set or expired" %}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if credential.bearer_token %}
+            <tr>
+                <th>{% trans "Token" %}</th>
+                <td>
+                    <textarea readonly rows="3" class="token-display">{{ credential.bearer_token }}</textarea>
+                </td>
+            </tr>
+            {% endif %}
+            {% if credential.token_expires_at %}
+            <tr>
+                <th>{% trans "Expires" %}</th>
+                <td>{{ credential.token_expires_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% endif %}
+            {% if credential.user_id %}
+            <tr>
+                <th>{% trans "User ID" %}</th>
+                <td><code class="text-xs">{{ credential.user_id }}</code></td>
+            </tr>
+            {% endif %}
+            {% if credential.last_sync_status %}
+            <tr>
+                <th>{% trans "Status" %}</th>
+                <td>{{ credential.last_sync_status }}</td>
+            </tr>
+            {% endif %}
+            {% if credential.last_sync_at %}
+            <tr>
+                <th>{% trans "Last Sync" %}</th>
+                <td>{{ credential.last_sync_at|date:"Y-m-d H:i" }}</td>
+            </tr>
+            {% endif %}
+        </table>
+
+        <div class="form-actions">
+            {% if credential.is_token_valid %}
+            <form action="{% url 'locations:kesco_trigger_sync' credential.uuid %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--primary">{% trans "Sync Now" %}</button>
+            </form>
+            {% endif %}
+            <a href="{% url 'locations:kesco_dashboard' %}" class="btn btn--secondary">
+                {% trans "← Back to KESCO Dashboard" %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

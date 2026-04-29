@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Parking Management" %} — {% trans "Lease Management" %}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1>{% trans "Parking Management" %}</h1>
+        <div class="flex gap-8 flex-wrap">
+            {% if location %}
+            <a href="/locations/{{ location.uuid }}/" class="btn btn--secondary btn--small">{% trans "Back to Location" %}</a>
+            {% else %}
+            <a href="/locations/" class="btn btn--secondary btn--small">{% trans "Back to Locations" %}</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <!-- Total Parking -->
+        <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="2"/>
+                    <text x="12" y="17" font-size="12" fill="currentColor" text-anchor="middle" font-weight="bold">P</text>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ total }}</div>
+            <div class="kpi-card__label">{% trans "Total Parking" %}</div>
+        </div>
+
+        <!-- Assigned -->
+        <a href="?status=assigned{% if location %}&location={{ location.uuid }}{% endif %}" class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ assigned_count }}</div>
+            <div class="kpi-card__label">{% trans "Assigned" %}</div>
+        </a>
+
+        <!-- Available -->
+        <a href="?status=unassigned{% if location %}&location={{ location.uuid }}{% endif %}" class="kpi-card kpi-card--danger">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 9v4M12 17h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ unassigned_count }}</div>
+            <div class="kpi-card__label">{% trans "Available" %}</div>
+        </a>
+
+        <!-- All (reset filter) -->
+        {% if status_filter != 'all' %}
+        <a href="?status=all{% if location %}&location={{ location.uuid }}{% endif %}" class="kpi-card">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__label kpi-card__label--offset">{% trans "Show All" %}</div>
+        </a>
+        {% else %}
+        <div class="kpi-card kpi-card--disabled">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__label kpi-card__label--offset">{% trans "All Shown" %}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Location Filter (only on global view) -->
+    {% if locations and not location %}
+    <div class="dashboard-section__header mb-12">
+        <form method="get" class="flex gap-8 items-center">
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            <select name="location" class="form-select select-narrow" onchange="this.form.submit()">
+                <option value="">{% trans "All Locations" %}</option>
+                {% for loc in locations %}
+                <option value="{{ loc.uuid }}" {% if location and location.uuid == loc.uuid %}selected{% endif %}>{{ loc.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Parking Table -->
+    {% if parking_places %}
+    <div class="dashboard-section">
+        <div class="dashboard-section__header">
+            <h2>
+                {% if location %}
+                    {% trans "Parking Places" %} — {{ location.name }}
+                {% else %}
+                    {% trans "All Parking Places" %}
+                {% endif %}
+            </h2>
+            {% if user.is_admin and location %}
+            <div class="flex gap-8 flex-wrap">
+                <a href="/locations/{{ location.uuid }}/parking/create/" class="btn btn--primary btn--small">
+                    + {% trans "Add" %}
+                </a>
+                <a href="/locations/{{ location.uuid }}/parking/bulk-create/" class="btn btn--secondary btn--small">
+                    + {% trans "Bulk Add" %}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    {% if not location %}
+                    <th>{% trans "Location" %}</th>
+                    {% endif %}
+                    <th>{% trans "Label" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Assigned Unit" %}</th>
+                    <th>{% trans "Covered" %}</th>
+                    {% if user.is_admin %}
+                    <th>{% trans "Actions" %}</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in parking_places %}
+                <tr>
+                    {% if not location %}
+                    <td data-label="{% trans "Location" %}">
+                        <a href="/locations/{{ p.location.uuid }}/parking/">{{ p.location.name }}</a>
+                    </td>
+                    {% endif %}
+                    <td data-label="{% trans "Label" %}"><strong>{{ p.label }}</strong></td>
+                    <td data-label="{% trans "Status" %}">
+                        {% if p.unit %}
+                        <span class="badge badge--leased">{% trans "Assigned" %}</span>
+                        {% else %}
+                        <span class="badge badge--vacant">{% trans "Available" %}</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="{% trans "Assigned Unit" %}">
+                        {% if p.unit %}
+                        <a href="/locations/{{ p.location.uuid }}/units/{{ p.unit.uuid }}/">{{ p.unit.name }}</a>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="{% trans "Covered" %}">
+                        {% if p.covered %}
+                        <span class="badge badge--active">{% trans "Covered" %}</span>
+                        {% else %}
+                        <span class="badge badge--inactive">{% trans "Open" %}</span>
+                        {% endif %}
+                    </td>
+                    {% if user.is_admin %}
+                    <td onclick="event.stopPropagation()">
+                        <div class="flex gap-8 flex-wrap">
+                            <a href="/locations/{{ p.location.uuid }}/parking/{{ p.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                            {% if user.is_super_user %}
+                            <form action="/locations/{{ p.location.uuid }}/parking/{{ p.uuid }}/delete/" method="post"
+                                  onsubmit="return confirm('{% trans "Are you sure?" %}')" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="dashboard-empty">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="14" y="14" width="36" height="36" rx="6" stroke="var(--border-color)" stroke-width="2"/>
+            <text x="32" y="38" font-size="20" fill="var(--text-secondary)" text-anchor="middle" font-weight="bold">P</text>
+        </svg>
+        <p>
+            {% trans "No parking places found." %}
+            {% if location and user.is_admin %}
+            <a href="/locations/{{ location.uuid }}/parking/create/" class="btn btn--primary btn--small ml-8">
+                {% trans "Add Parking" %}
+            </a>
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

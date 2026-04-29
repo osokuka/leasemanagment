@@ -52,13 +52,17 @@ class UnitForm(forms.ModelForm):
 class MeterForm(forms.ModelForm):
     class Meta:
         model = Meter
-        fields = ['name', 'unit', 'meter_type', 'reading_metric', 'serial_number']
+        fields = ['name', 'unit', 'meter_type', 'reading_metric', 'serial_number', 'kesco_debitor_id']
         labels = {
             'name': _('Meter Name'),
             'unit': _('Assigned Unit'),
             'meter_type': _('Meter Type'),
             'reading_metric': _('Reading Metric'),
             'serial_number': _('Serial Number'),
+            'kesco_debitor_id': _('KESCO Debitor ID'),
+        }
+        help_texts = {
+            'kesco_debitor_id': _('Optional — link to KESCO ElDebitorId (e.g. 160) for automatic sync'),
         }
 
     def __init__(self, *args, lock_unit=False, **kwargs):
@@ -115,7 +119,7 @@ class MeterLedgerForm(forms.ModelForm):
                     'type': 'month',
                     'class': 'form-control',
                     'id': 'id_billing_period',
-                    'placeholder': 'Select month & year',
+                    'placeholder': _('Select month & year'),
                 }),
             )
 
@@ -141,10 +145,9 @@ class MeterLedgerForm(forms.ModelForm):
 class ParkingPlaceForm(forms.ModelForm):
     class Meta:
         model = ParkingPlace
-        fields = ['label', 'unit', 'covered']
+        fields = ['label', 'covered']
         labels = {
             'label': _('Label'),
-            'unit': _('Assigned Unit'),
             'covered': _('Covered'),
         }
 
@@ -152,10 +155,64 @@ class ParkingPlaceForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             if hasattr(field, 'widget'):
-                if isinstance(field.widget, forms.Select):
+                if isinstance(field.widget, forms.CheckboxInput):
+                    pass
+                elif isinstance(field.widget, forms.Select):
                     field.widget.attrs.update({'class': 'form-select'})
                 else:
                     field.widget.attrs.update({'class': 'form-control'})
+
+    def clean_label(self):
+        """Check for duplicate parking label within the same location."""
+        label = self.cleaned_data.get('label')
+        location = None
+        if self.instance and self.instance.pk:
+            location = self.instance.location
+        elif self.initial and 'location' in self.initial:
+            location = self.initial['location']
+        elif hasattr(self, '_location'):
+            location = self._location
+
+        if label and location:
+            qs = ParkingPlace.objects.filter(location=location, label=label)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError(
+                    _('Parking place with label "%(label)s" already exists in this location.'),
+                    code='duplicate',
+                    params={'label': label},
+                )
+        return label
+
+
+class ParkingBulkCreateForm(forms.Form):
+    """Form for bulk creating multiple parking places at once."""
+    labels = forms.CharField(
+        label=_('Parking Labels'),
+        widget=forms.Textarea(attrs={
+            'rows': 8,
+            'class': 'form-control',
+            'placeholder': 'P1\nP2\nP3\nP4',
+        }),
+        help_text=_('Enter one label per line'),
+    )
+    covered = forms.BooleanField(
+        label=_('Covered'),
+        required=False,
+        initial=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def clean_labels(self):
+        """Parse labels from textarea, one per line."""
+        raw = self.cleaned_data.get('labels', '')
+        labels = [line.strip() for line in raw.split('\n') if line.strip()]
+        if not labels:
+            raise forms.ValidationError(_('Please enter at least one parking label.'))
+        return labels
 
 
 class LeaseLedgerForm(forms.ModelForm):
@@ -216,7 +273,7 @@ class LeaseLedgerForm(forms.ModelForm):
             'type': 'month',
             'class': 'form-control',
             'id': 'id_billing_period',
-            'placeholder': 'Select month & year',
+            'placeholder': _('Select month & year'),
         }
         if min_val:
             attrs['min'] = min_val

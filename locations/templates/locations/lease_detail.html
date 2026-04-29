@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ lease.name }} - Bibaj Menaxhment{% endblock %}
+{% block title %}{{ lease.name }} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1><span style="color:var(--text-secondary); font-size:16px;">{{ lease.display_id }}</span> — {{ lease.name }}</h1>
+    <h1><span class="page-header__eyebrow">{{ lease.display_id }}</span> — {{ lease.name }}</h1>
     <div class="flex gap-8">
         {% if user.is_admin %}
         <a href="/leases/{{ lease.uuid }}/edit/" class="btn btn--secondary">{% trans "Edit Lease" %}</a>
@@ -16,9 +16,9 @@
 
 <!-- Lease Info -->
 <div class="card mb-24">
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+    <div class="summary-grid summary-grid--wide">
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Status" %}</span>
+            <span class="summary-label">{% trans "Status" %}</span>
             {% if lease.is_active %}
             <span class="badge badge--leased">{% trans "Active" %}</span>
             {% else %}
@@ -26,60 +26,60 @@
             {% endif %}
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Monthly Payment" %}</span>
-            <span style="font-size:14px; font-weight:600;">€{{ lease.monthly_payment }}</span>
+            <span class="summary-label">{% trans "Monthly Payment" %}</span>
+            <span class="summary-value">€{{ lease.monthly_payment }}</span>
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Advance" %}</span>
-            <span style="font-size:14px;">{{ lease.advance_months }} {% trans "months" %}</span>
+            <span class="summary-label">{% trans "Advance" %}</span>
+            <span class="text-body">{{ lease.advance_months }} {% trans "months" %}</span>
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Deposit" %}</span>
-            {% if lease.deposit %}<span style="font-size:14px; font-weight:600;">€{{ lease.deposit }}</span>{% else %}<span style="font-size:14px;">—</span>{% endif %}
+            <span class="summary-label">{% trans "Deposit" %}</span>
+            {% if lease.deposit %}<span class="summary-value">€{{ lease.deposit }}</span>{% else %}<span class="text-body">—</span>{% endif %}
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Contact Person" %}</span>
-            <span style="font-size:14px;">{{ lease.contact|default:"—" }}</span>
+            <span class="summary-label">{% trans "Contact Person" %}</span>
+            <span class="text-body">{{ lease.contact|default:"—" }}</span>
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Phone" %}</span>
-            {% if lease.phone %}<a href="tel:{{ lease.phone }}" style="font-size:14px;">{{ lease.phone }}</a>{% else %}<span style="font-size:14px;">—</span>{% endif %}
+            <span class="summary-label">{% trans "Phone" %}</span>
+            {% if lease.phone %}<a href="tel:{{ lease.phone }}" class="text-body">{{ lease.phone }}</a>{% else %}<span class="text-body">—</span>{% endif %}
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Email" %}</span>
-            {% if lease.email %}<a href="mailto:{{ lease.email }}" style="font-size:14px;">{{ lease.email }}</a>{% else %}<span style="font-size:14px;">—</span>{% endif %}
+            <span class="summary-label">{% trans "Email" %}</span>
+            {% if lease.email %}<a href="mailto:{{ lease.email }}" class="text-body">{{ lease.email }}</a>{% else %}<span class="text-body">—</span>{% endif %}
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Start Date" %}</span>
-            <span style="font-size:14px;">{{ lease.start_date }}</span>
+            <span class="summary-label">{% trans "Start Date" %}</span>
+            <span class="text-body">{{ lease.start_date }}</span>
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "End Date" %}</span>
-            <span style="font-size:14px;">{{ lease.end_date|default:"—" }}</span>
+            <span class="summary-label">{% trans "End Date" %}</span>
+            <span class="text-body">{{ lease.end_date|default:"—" }}</span>
         </div>
         {% if lease.contract %}
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Contract" %}</span>
-            <a href="{{ lease.contract.url }}" target="_blank" rel="noopener" style="font-size:14px;">{% trans "Download PDF" %} 📄</a>
+            <span class="summary-label">{% trans "Contract" %}</span>
+            <a href="{{ lease.contract.url }}" target="_blank" rel="noopener" class="text-body">{% trans "Download PDF" %} 📄</a>
         </div>
         {% endif %}
     </div>
     {% if lease.notes %}
-    <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color);">
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Notes" %}</span>
-        <span style="font-size:14px;">{{ lease.notes }}</span>
+    <div class="detail-divider">
+        <span class="summary-label">{% trans "Notes" %}</span>
+        <span class="text-body">{{ lease.notes }}</span>
     </div>
     {% endif %}
 </div>
 
 <!-- Assigned Units -->
 <div class="page-header">
-    <h2 style="font-size:20px; font-weight:600;">{% trans "Assigned Units" %} ({{ units|length }})</h2>
+    <h2 class="section-heading">{% trans "Assigned Units" %} ({{ units|length }})</h2>
     <a href="/leases/{{ lease.uuid }}/ledger/" class="btn btn--secondary">{% trans "Payment Ledger" %}</a>
 </div>
 
 {% if units %}
-<div class="card" style="padding:0; overflow:hidden;">
+<div class="card card--flush">
     <table class="table">
         <thead>
             <tr>
@@ -104,7 +104,7 @@
     </table>
 </div>
 {% else %}
-<div class="card text-center" style="padding:32px; color:var(--text-secondary);">
+<div class="card empty-state empty-state--table">
     {% trans "No units assigned to this lease. Edit a unit to assign it." %}
 </div>
 {% endif %}

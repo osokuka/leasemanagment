@@ -1,0 +1,1939 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-27 16:57+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: accounts/admin.py:14
+msgid "Personal info"
+msgstr "Informazioni personali"
+
+#: accounts/admin.py:15
+msgid "Role & Permissions"
+msgstr "Ruolo e autorizzazioni"
+
+#: accounts/admin.py:16
+msgid "Important dates"
+msgstr "Date importanti"
+
+#: accounts/forms.py:13 accounts/forms.py:61
+#: accounts/templates/accounts/user_list.html:21
+#: accounts/templates/accounts/user_list.html:36
+msgid "Role"
+msgstr "Ruolo"
+
+#: accounts/forms.py:21 accounts/forms.py:69
+#: accounts/templates/accounts/login.html:22
+#: accounts/templates/accounts/user_list.html:18
+#: accounts/templates/accounts/user_list.html:31
+#: locations/templates/locations/kesco/dashboard.html:109
+#: locations/templates/locations/kesco/dashboard.html:120
+msgid "Username"
+msgstr "Nome utente"
+
+#: accounts/forms.py:22 accounts/forms.py:70 accounts/models.py:63
+#: accounts/templates/accounts/user_list.html:20
+#: accounts/templates/accounts/user_list.html:35 locations/forms.py:369
+#: locations/models.py:134 locations/templates/locations/lease_detail.html:49
+msgid "Email"
+msgstr "E-mail"
+
+#: accounts/forms.py:25 accounts/forms.py:74
+msgid "Usernames are stored in lowercase and are not case-sensitive."
+msgstr ""
+"I nomi utente sono memorizzati in lettere minuscole e non fanno distinzione "
+"tra maiuscole e minuscole."
+
+#: accounts/forms.py:42 accounts/forms.py:114
+msgid "A user with that username already exists."
+msgstr "Esiste già un utente con quel nome utente."
+
+#: accounts/forms.py:49
+msgid "New password"
+msgstr "Nuova password"
+
+#: accounts/forms.py:52
+msgid "Leave blank to keep the current password."
+msgstr "Lascia vuoto per mantenere la password corrente."
+
+#: accounts/forms.py:55
+msgid "Confirm new password"
+msgstr "Conferma la nuova password"
+
+#: accounts/forms.py:71 accounts/templates/accounts/user_list.html:22
+#: accounts/templates/accounts/user_list.html:39 locations/forms.py:373
+#: locations/models.py:152 locations/models.py:559
+#: locations/templates/locations/kesco/credential_form.html:65
+#: locations/templates/locations/lease_detail.html:23
+#: locations/templates/locations/lease_list.html:44
+#: locations/templates/locations/lease_list.html:58
+msgid "Active"
+msgstr "Attivo"
+
+#: accounts/forms.py:126
+msgid "The two password fields did not match."
+msgstr "I due campi della password non corrispondevano."
+
+#: accounts/models.py:8
+msgid "Super User"
+msgstr "Superutente"
+
+#: accounts/models.py:9
+msgid "Admin"
+msgstr "Ammin"
+
+#: accounts/models.py:10 accounts/views.py:43
+msgid "Data Entry Clerk"
+msgstr "Addetto all'inserimento dati"
+
+#: accounts/models.py:30
+msgid "Preferred Language"
+msgstr "Lingua preferita"
+
+#: accounts/models.py:57
+msgid "Company Name"
+msgstr "Nome dell'azienda"
+
+#: accounts/models.py:58
+msgid "Tax Number"
+msgstr "Codice Fiscale"
+
+#: accounts/models.py:59
+msgid "Registration Number"
+msgstr "Numero di registrazione"
+
+#: accounts/models.py:60 locations/templates/locations/location_detail.html:21
+#: locations/templates/locations/location_list.html:20
+#: locations/templates/locations/location_list.html:34
+msgid "Address"
+msgstr "Indirizzo"
+
+#: accounts/models.py:61
+msgid "City"
+msgstr "Città"
+
+#: accounts/models.py:62 locations/forms.py:368 locations/models.py:129
+#: locations/templates/locations/lease_detail.html:45
+#: locations/templates/locations/lease_list.html:41
+#: locations/templates/locations/lease_list.html:55
+msgid "Phone"
+msgstr "Telefono"
+
+#: accounts/models.py:64
+msgid "Website"
+msgstr "Sito web"
+
+#: accounts/models.py:65
+msgid "Logo"
+msgstr "Logo"
+
+#: accounts/models.py:66
+msgid "Fiscal Code"
+msgstr "Codice Fiscale"
+
+#: accounts/models.py:67
+msgid "NIPT"
+msgstr "NIPT"
+
+#: accounts/models.py:72 accounts/views.py:202 templates/base.html:109
+msgid "Company Profile"
+msgstr "Profilo Aziendale"
+
+#: accounts/models.py:73
+msgid "Company Profiles"
+msgstr "Profili aziendali"
+
+#: accounts/models.py:83
+msgid "My Company"
+msgstr "La mia azienda"
+
+#: accounts/templates/accounts/company_profile_form.html:4
+#: accounts/templates/accounts/login.html:6
+#: accounts/templates/accounts/login.html:15
+#: accounts/templates/accounts/user_form.html:4
+#: accounts/templates/accounts/user_list.html:4
+#: locations/templates/locations/dashboard.html:4
+#: locations/templates/locations/kesco/dashboard.html:4
+#: locations/templates/locations/lease_detail.html:4
+#: locations/templates/locations/lease_form.html:4
+#: locations/templates/locations/lease_ledger_form.html:4
+#: locations/templates/locations/lease_ledger_list.html:4
+#: locations/templates/locations/lease_list.html:4
+#: locations/templates/locations/location_detail.html:4
+#: locations/templates/locations/location_form.html:4
+#: locations/templates/locations/location_list.html:4
+#: locations/templates/locations/meter_form.html:4
+#: locations/templates/locations/meter_ledger_form.html:4
+#: locations/templates/locations/meter_ledger_list.html:4
+#: locations/templates/locations/parking_bulk_form.html:4
+#: locations/templates/locations/parking_form.html:4
+#: locations/templates/locations/parking_list.html:4
+#: locations/templates/locations/unit_detail.html:4
+#: locations/templates/locations/unit_form.html:4
+#: locations/templates/locations/units_with_meter_debt_list.html:4
+#: locations/templates/locations/unpaid_ledgers_list.html:4
+#: templates/base.html:6 templates/base.html:22 templates/base.html:152
+msgid "Lease Management"
+msgstr "Gestione della locazione"
+
+#: accounts/templates/accounts/company_profile_form.html:9
+#: locations/templates/locations/units_with_meter_debt_list.html:9
+#: locations/templates/locations/unpaid_ledgers_list.html:9
+msgid "Back to Dashboard"
+msgstr "Torna alla dashboard"
+
+#: accounts/templates/accounts/company_profile_form.html:14
+#: templates/base.html:86
+msgid "Setup"
+msgstr "Impostare"
+
+#: accounts/templates/accounts/company_profile_form.html:16
+msgid ""
+"Manage your company information displayed on reports, invoices, and system "
+"headers."
+msgstr ""
+"Gestisci le informazioni della tua azienda visualizzate su report, fatture e"
+" intestazioni di sistema."
+
+#: accounts/templates/accounts/company_profile_form.html:116
+#: accounts/templates/accounts/user_form.html:37
+#: locations/templates/locations/kesco/credential_form.html:72
+#: locations/templates/locations/lease_form.html:28
+#: locations/templates/locations/lease_ledger_form.html:25
+#: locations/templates/locations/location_form.html:28
+#: locations/templates/locations/meter_form.html:25
+#: locations/templates/locations/meter_ledger_form.html:25
+#: locations/templates/locations/parking_form.html:25
+#: locations/templates/locations/unit_form.html:28
+msgid "Save"
+msgstr "Salva"
+
+#: accounts/templates/accounts/company_profile_form.html:117
+#: accounts/templates/accounts/user_form.html:38
+#: locations/templates/locations/kesco/credential_form.html:75
+#: locations/templates/locations/lease_form.html:29
+#: locations/templates/locations/lease_ledger_form.html:26
+#: locations/templates/locations/location_form.html:29
+#: locations/templates/locations/meter_form.html:26
+#: locations/templates/locations/meter_ledger_form.html:26
+#: locations/templates/locations/parking_bulk_form.html:50
+#: locations/templates/locations/parking_form.html:26
+#: locations/templates/locations/unit_form.html:29
+msgid "Cancel"
+msgstr "Cancellare"
+
+#: accounts/templates/accounts/login.html:6
+msgid "Login"
+msgstr "Login"
+
+#: accounts/templates/accounts/login.html:16
+msgid "Sign in to your account"
+msgstr "Accedi al tuo account"
+
+#: accounts/templates/accounts/login.html:26
+#: locations/templates/locations/kesco/credential_form.html:34
+msgid "Password"
+msgstr "Password"
+
+#: accounts/templates/accounts/login.html:29
+msgid "Sign In"
+msgstr "Registrazione"
+
+#: accounts/templates/accounts/user_form.html:9
+#: locations/templates/locations/lease_detail.html:13
+#: locations/templates/locations/lease_form.html:9
+#: locations/templates/locations/location_detail.html:13
+#: locations/templates/locations/location_form.html:9
+msgid "Back to List"
+msgstr "Torna alla lista"
+
+#: accounts/templates/accounts/user_form.html:14
+msgid "Account details"
+msgstr "Dettagli del conto"
+
+#: accounts/templates/accounts/user_form.html:17
+#: accounts/templates/accounts/user_list.html:19
+#: accounts/templates/accounts/user_list.html:34
+msgid "UUID"
+msgstr "UUID"
+
+#: accounts/templates/accounts/user_form.html:19
+msgid ""
+"Manage access, contact information, and role permissions for this user."
+msgstr ""
+"Gestisci l'accesso, le informazioni di contatto e le autorizzazioni del "
+"ruolo per questo utente."
+
+#: accounts/templates/accounts/user_list.html:4
+#: accounts/templates/accounts/user_list.html:8
+msgid "Users"
+msgstr "Utenti"
+
+#: accounts/templates/accounts/user_list.html:10
+msgid "+ New User"
+msgstr "+ Nuovo utente"
+
+#: accounts/templates/accounts/user_list.html:24
+#: locations/templates/locations/kesco/dashboard.html:114
+#: locations/templates/locations/kesco/dashboard.html:139
+#: locations/templates/locations/lease_ledger_list.html:73
+#: locations/templates/locations/lease_list.html:45
+#: locations/templates/locations/location_detail.html:67
+#: locations/templates/locations/location_list.html:24
+#: locations/templates/locations/meter_ledger_list.html:44
+#: locations/templates/locations/meter_ledger_list.html:63
+#: locations/templates/locations/parking_list.html:126
+#: locations/templates/locations/unit_detail.html:63
+#: locations/templates/locations/unit_detail.html:136
+msgid "Actions"
+msgstr "Azioni"
+
+#: accounts/templates/accounts/user_list.html:44
+#: locations/templates/locations/kesco/credential_form.html:5
+#: locations/templates/locations/kesco/credential_list.html:50
+#: locations/templates/locations/kesco/dashboard.html:151
+#: locations/templates/locations/kesco/login_page.html:11
+#: locations/templates/locations/lease_ledger_list.html:122
+#: locations/templates/locations/lease_list.html:63
+#: locations/templates/locations/location_detail.html:91
+#: locations/templates/locations/location_list.html:44
+#: locations/templates/locations/meter_ledger_list.html:65
+#: locations/templates/locations/parking_list.html:157
+#: locations/templates/locations/unit_detail.html:152
+msgid "Edit"
+msgstr "Modificare"
+
+#: accounts/templates/accounts/user_list.html:48
+#: locations/templates/locations/kesco/credential_list.html:55
+#: locations/templates/locations/lease_ledger_list.html:125
+#: locations/templates/locations/lease_list.html:66
+#: locations/templates/locations/location_detail.html:94
+#: locations/templates/locations/location_list.html:47
+#: locations/templates/locations/meter_ledger_list.html:73
+#: locations/templates/locations/parking_list.html:160
+#: locations/templates/locations/unit_detail.html:155
+msgid "Are you sure?"
+msgstr "Sei sicuro?"
+
+#: accounts/templates/accounts/user_list.html:50
+#: locations/templates/locations/kesco/credential_list.html:56
+#: locations/templates/locations/lease_ledger_list.html:127
+#: locations/templates/locations/lease_list.html:68
+#: locations/templates/locations/location_detail.html:96
+#: locations/templates/locations/location_list.html:49
+#: locations/templates/locations/meter_ledger_list.html:75
+#: locations/templates/locations/parking_list.html:162
+#: locations/templates/locations/unit_detail.html:157
+msgid "Delete"
+msgstr "Eliminare"
+
+#: accounts/templates/accounts/user_list.html:60
+msgid "No users found."
+msgstr "Nessun utente trovato."
+
+#: accounts/views.py:62
+msgid "Invalid username or password."
+msgstr "Nome utente o password non validi."
+
+#: accounts/views.py:89
+#, python-brace-format
+msgid "User \"{user}\" created successfully."
+msgstr "L'utente \"{user}\" è stato creato correttamente."
+
+#: accounts/views.py:94
+msgid "Create User"
+msgstr "Crea utente"
+
+#: accounts/views.py:121
+#, python-brace-format
+msgid "User \"{user}\" updated successfully."
+msgstr "L'utente \"{user}\" è stato aggiornato correttamente."
+
+#: accounts/views.py:128
+msgid "Edit User"
+msgstr "Modifica utente"
+
+#: accounts/views.py:140
+msgid "You cannot delete yourself."
+msgstr "Non puoi eliminare te stesso."
+
+#: accounts/views.py:144
+#, python-brace-format
+msgid "User \"{user}\" deleted successfully."
+msgstr "L'utente \"{user}\" è stato eliminato correttamente."
+
+#: accounts/views.py:194
+msgid "Company profile updated successfully."
+msgstr "Profilo aziendale aggiornato con successo."
+
+#: locations/forms.py:12 locations/models.py:49
+msgid "Location Name"
+msgstr "Nome della posizione"
+
+#: locations/forms.py:13 locations/models.py:52
+msgid "Location Address"
+msgstr "Indirizzo della posizione"
+
+#: locations/forms.py:14 locations/models.py:58
+#: locations/templates/locations/location_detail.html:32
+#: locations/templates/locations/location_list.html:22
+#: locations/templates/locations/location_list.html:36
+msgid "Google Pin"
+msgstr "Google Pin"
+
+#: locations/forms.py:15 locations/models.py:64
+#: locations/templates/locations/location_detail.html:26
+#: locations/templates/locations/location_list.html:21
+#: locations/templates/locations/location_list.html:35
+msgid "Focal Point"
+msgstr "Punto focale"
+
+#: locations/forms.py:18
+msgid "Optional — paste a Google Maps share link"
+msgstr "Facoltativo: incolla un collegamento di condivisione di Google Maps"
+
+#: locations/forms.py:19
+msgid "Optional — e.g. \"Main entrance\", \"Floor 3\""
+msgstr "Facoltativo – ad es. \"Ingresso principale\", \"Piano 3\""
+
+#: locations/forms.py:36 locations/models.py:330
+#: locations/templates/locations/location_detail.html:62
+#: locations/templates/locations/location_detail.html:74
+msgid "Unit Name"
+msgstr "Nome dell'unità"
+
+#: locations/forms.py:37 locations/models.py:335
+#: locations/templates/locations/location_detail.html:65
+#: locations/templates/locations/location_detail.html:87
+msgid "Area (sqm)"
+msgstr "Superficie (mq)"
+
+#: locations/forms.py:38 locations/models.py:341
+msgid "Unit Type"
+msgstr "Tipo di unità"
+
+#: locations/forms.py:39
+msgid "Assign Lease"
+msgstr "Assegnare contratto di locazione"
+
+#: locations/forms.py:57 locations/models.py:383
+msgid "Meter Name"
+msgstr "Nome del contatore"
+
+#: locations/forms.py:58 locations/models.py:711
+#: locations/templates/locations/parking_list.html:123
+#: locations/templates/locations/parking_list.html:146
+msgid "Assigned Unit"
+msgstr "Unità assegnata"
+
+#: locations/forms.py:59 locations/models.py:388
+msgid "Meter Type"
+msgstr "Tipo di misuratore"
+
+#: locations/forms.py:60 locations/models.py:393
+#: locations/templates/locations/meter_ledger_list.html:23
+#: locations/templates/locations/unit_detail.html:133
+#: locations/templates/locations/unit_detail.html:147
+msgid "Reading Metric"
+msgstr "Lettura metrica"
+
+#: locations/forms.py:61 locations/models.py:399
+msgid "Serial Number"
+msgstr "Numero di serie"
+
+#: locations/forms.py:62 locations/models.py:405
+msgid "KESCO Debitor ID"
+msgstr "ID debitore KESCO"
+
+#: locations/forms.py:65
+msgid "Optional — link to KESCO ElDebitorId (e.g. 160) for automatic sync"
+msgstr ""
+"Facoltativo: collegamento a KESCO ElDebitorId (ad esempio 160) per la "
+"sincronizzazione automatica"
+
+#: locations/forms.py:85 locations/forms.py:223 locations/models.py:242
+#: locations/models.py:464
+msgid "Month"
+msgstr "Mese"
+
+#: locations/forms.py:86 locations/forms.py:224 locations/models.py:245
+#: locations/models.py:467
+msgid "Year"
+msgstr "Anno"
+
+#: locations/forms.py:87 locations/models.py:474
+#: locations/templates/locations/lease_ledger_print.html:266
+#: locations/templates/locations/meter_ledger_list.html:40
+#: locations/templates/locations/meter_ledger_list.html:52
+msgid "Reading"
+msgstr "Lettura"
+
+#: locations/forms.py:88 locations/models.py:481
+msgid "Billed Amount (€)"
+msgstr "Importo fatturato (€)"
+
+#: locations/forms.py:91
+msgid ""
+"Enter the current third-party expense still owed by the tenant. Use 0 if the"
+" prior bill was paid before the new bill arrived."
+msgstr ""
+"Inserisci le spese correnti di terzi ancora dovute dall'inquilino. "
+"Utilizzare 0 se la fattura precedente è stata pagata prima dell'arrivo della"
+" nuova fattura."
+
+#: locations/forms.py:105 locations/forms.py:116 locations/forms.py:287
+#: locations/forms.py:294
+msgid "Billing Period"
+msgstr "Periodo di fatturazione"
+
+#: locations/forms.py:122 locations/forms.py:276
+msgid "Select month & year"
+msgstr "Seleziona mese e anno"
+
+#: locations/forms.py:150 locations/models.py:703
+#: locations/templates/locations/parking_list.html:121
+#: locations/templates/locations/parking_list.html:138
+#: locations/templates/locations/unit_detail.html:60
+#: locations/templates/locations/unit_detail.html:70
+msgid "Label"
+msgstr "Etichetta"
+
+#: locations/forms.py:151 locations/forms.py:201 locations/models.py:715
+#: locations/templates/locations/parking_list.html:124
+#: locations/templates/locations/parking_list.html:153
+#: locations/templates/locations/unit_detail.html:61
+#: locations/templates/locations/unit_detail.html:71
+#: locations/templates/locations/unit_detail.html:107
+msgid "Covered"
+msgstr "Coperto"
+
+#: locations/forms.py:182
+#, python-format
+msgid "Parking place with label \"%(label)s\" already exists in this location."
+msgstr ""
+"In questa posizione esiste già un parcheggio con l'etichetta \"%(label)s\"."
+
+#: locations/forms.py:192
+msgid "Parking Labels"
+msgstr "Etichette di parcheggio"
+
+#: locations/forms.py:198
+msgid "Enter one label per line"
+msgstr "Inserisci un'etichetta per riga"
+
+#: locations/forms.py:214
+msgid "Please enter at least one parking label."
+msgstr "Inserisci almeno un'etichetta di parcheggio."
+
+#: locations/forms.py:225 locations/models.py:250
+msgid "Amount Due (€)"
+msgstr "Importo dovuto (€)"
+
+#: locations/forms.py:226 locations/models.py:256
+msgid "Amount Paid (€)"
+msgstr "Importo pagato (€)"
+
+#: locations/forms.py:227 locations/models.py:262
+#: locations/templates/locations/kesco/dashboard.html:113
+#: locations/templates/locations/kesco/dashboard.html:136
+#: locations/templates/locations/kesco/login_page.html:49
+#: locations/templates/locations/lease_detail.html:21
+#: locations/templates/locations/lease_ledger_list.html:69
+#: locations/templates/locations/lease_ledger_list.html:96
+#: locations/templates/locations/lease_ledger_print.html:204
+#: locations/templates/locations/lease_ledger_print.html:268
+#: locations/templates/locations/location_detail.html:64
+#: locations/templates/locations/location_detail.html:80
+#: locations/templates/locations/parking_list.html:122
+#: locations/templates/locations/parking_list.html:139
+#: locations/templates/locations/unit_detail.html:26
+#: locations/templates/locations/unit_detail.html:189
+#: locations/templates/locations/unit_detail.html:207
+#: locations/templates/locations/unpaid_ledgers_list.html:20
+#: locations/templates/locations/unpaid_ledgers_list.html:42
+msgid "Status"
+msgstr "Stato"
+
+#: locations/forms.py:228 locations/models.py:267
+#: locations/templates/locations/lease_ledger_list.html:70
+#: locations/templates/locations/lease_ledger_list.html:109
+#: locations/templates/locations/lease_ledger_print.html:205
+#: locations/templates/locations/unit_detail.html:190
+#: locations/templates/locations/unit_detail.html:220
+msgid "Payment Date"
+msgstr "Data di pagamento"
+
+#: locations/forms.py:229 locations/forms.py:377 locations/models.py:174
+#: locations/models.py:272 locations/templates/locations/lease_detail.html:69
+#: locations/templates/locations/lease_ledger_print.html:206
+msgid "Notes"
+msgstr "Note"
+
+#: locations/forms.py:230 locations/models.py:278
+msgid "Payment Slip"
+msgstr "Distinta di pagamento"
+
+#: locations/forms.py:328
+#, python-format
+msgid "This period is before the lease started (%(start)s)."
+msgstr "Questo periodo è precedente all'inizio del leasing (%(start)s)."
+
+#: locations/forms.py:345
+#, python-format
+msgid ""
+"This period is more than 1 month after the lease ended (%(end)s). Final "
+"settlement allowed until %(grace)s."
+msgstr ""
+"Questo periodo è superiore a 1 mese dopo la scadenza del contratto di "
+"locazione (%(end)s). Saldo finale consentito fino al %(grace)s."
+
+#: locations/forms.py:354
+msgid "Cannot add entries for an inactive lease with no end date."
+msgstr "Impossibile aggiungere voci per un lease inattivo senza data di fine."
+
+#: locations/forms.py:366 locations/models.py:117
+#: locations/templates/locations/lease_list.html:40
+#: locations/templates/locations/lease_list.html:54
+msgid "Responsible Party"
+msgstr "Parte Responsabile"
+
+#: locations/forms.py:367 locations/models.py:123
+#: locations/templates/locations/lease_detail.html:41
+msgid "Contact Person"
+msgstr "Referente"
+
+#: locations/forms.py:370
+msgid "Contract (PDF)"
+msgstr "Contratto (PDF)"
+
+#: locations/forms.py:371 locations/models.py:143
+#: locations/templates/locations/lease_detail.html:53
+msgid "Start Date"
+msgstr "Data di inizio"
+
+#: locations/forms.py:372 locations/models.py:148
+#: locations/templates/locations/lease_detail.html:57
+msgid "End Date"
+msgstr "Data di fine"
+
+#: locations/forms.py:374 locations/models.py:158
+msgid "Monthly Payment (€)"
+msgstr "Pagamento mensile (€)"
+
+#: locations/forms.py:375 locations/models.py:162
+msgid "Months in Advance"
+msgstr "Mesi in anticipo"
+
+#: locations/forms.py:376 locations/models.py:169
+msgid "Deposit (€)"
+msgstr "Deposito (€)"
+
+#: locations/forms.py:380
+msgid "Upload the lease contract — PDF only"
+msgstr "Carica il contratto di locazione – solo PDF"
+
+#: locations/forms.py:381
+msgid "How many months the tenant must pay in advance"
+msgstr "Quanti mesi l'inquilino deve pagare in anticipo"
+
+#: locations/forms.py:382
+msgid "Optional security deposit amount"
+msgstr "Importo del deposito cauzionale facoltativo"
+
+#: locations/forms.py:383
+msgid "Leave blank for open-ended lease"
+msgstr "Lasciare vuoto per contratto di locazione a tempo indeterminato"
+
+#: locations/kesco_views.py:61
+msgid "Username is required."
+msgstr "Il nome utente è obbligatorio."
+
+#: locations/kesco_views.py:66
+msgid "Credential for this username already exists."
+msgstr "Le credenziali per questo nome utente esistono già."
+
+#: locations/kesco_views.py:80
+msgid "Credential and token saved successfully."
+msgstr "Credenziali e token salvati correttamente."
+
+#: locations/kesco_views.py:82
+msgid "Credential saved. Add token by editing."
+msgstr "Credenziali salvate. Aggiungi token modificando."
+
+#: locations/kesco_views.py:111
+msgid "Credential updated successfully."
+msgstr "Credenziale aggiornata correttamente."
+
+#: locations/kesco_views.py:124
+msgid "Credential deleted."
+msgstr "Credenziale eliminata."
+
+#: locations/kesco_views.py:222 locations/kesco_views.py:235
+msgid "KESCO sync completed."
+msgstr "Sincronizzazione KESCO completata."
+
+#: locations/models.py:18
+msgid "Apartment"
+msgstr "Appartamento"
+
+#: locations/models.py:19
+msgid "House"
+msgstr "Casa"
+
+#: locations/models.py:20
+msgid "Villa"
+msgstr "Villa"
+
+#: locations/models.py:21
+msgid "Office"
+msgstr "Ufficio"
+
+#: locations/models.py:22
+msgid "Cafe & Restaurant"
+msgstr "Caffetteria e ristorante"
+
+#: locations/models.py:23
+msgid "Space"
+msgstr "Spazio"
+
+#: locations/models.py:24
+msgid "Undefined"
+msgstr "Indefinito"
+
+#: locations/models.py:28
+msgid "Electric"
+msgstr "Elettrico"
+
+#: locations/models.py:29
+msgid "Water"
+msgstr "Acqua"
+
+#: locations/models.py:30
+msgid "Gas"
+msgstr "Gas"
+
+#: locations/models.py:34
+msgid "kWh"
+msgstr "kWh"
+
+#: locations/models.py:35
+msgid "m³"
+msgstr "m³"
+
+#: locations/models.py:36
+msgid "m³ (gas)"
+msgstr "m³ (gas)"
+
+#: locations/models.py:70 locations/models.py:318 locations/models.py:699
+#: locations/templates/locations/dashboard.html:126
+#: locations/templates/locations/dashboard.html:138
+#: locations/templates/locations/lease_detail.html:87
+#: locations/templates/locations/lease_detail.html:98
+#: locations/templates/locations/parking_list.html:119
+#: locations/templates/locations/parking_list.html:134
+#: locations/templates/locations/units_with_meter_debt_list.html:17
+#: locations/templates/locations/units_with_meter_debt_list.html:27
+msgid "Location"
+msgstr "Posizione"
+
+#: locations/models.py:71 locations/templates/locations/location_list.html:4
+#: locations/templates/locations/location_list.html:8 templates/base.html:132
+msgid "Locations"
+msgstr "Posizioni"
+
+#: locations/models.py:83
+#: locations/templates/locations/lease_ledger_list.html:67
+#: locations/templates/locations/lease_ledger_list.html:82
+#: locations/templates/locations/lease_ledger_list.html:100
+#: locations/templates/locations/lease_ledger_print.html:202
+#: locations/templates/locations/lease_ledger_print.html:226
+#: locations/templates/locations/unit_detail.html:187
+#: locations/templates/locations/unit_detail.html:199
+#: locations/templates/locations/unit_detail.html:211
+msgid "Paid"
+msgstr "Pagato"
+
+#: locations/models.py:84
+#: locations/templates/locations/lease_ledger_print.html:227
+msgid "Partial"
+msgstr "Parziale"
+
+#: locations/models.py:85
+#: locations/templates/locations/lease_ledger_print.html:228
+msgid "Unpaid"
+msgstr "Non pagato"
+
+#: locations/models.py:86
+#: locations/templates/locations/lease_ledger_print.html:229
+msgid "Overdue"
+msgstr "In ritardo"
+
+#: locations/models.py:113 locations/templates/locations/lease_list.html:39
+#: locations/templates/locations/lease_list.html:51
+msgid "Lease ID"
+msgstr "Identificativo del contratto di locazione"
+
+#: locations/models.py:140 locations/templates/locations/lease_detail.html:62
+#: locations/templates/locations/lease_ledger_print.html:159
+msgid "Contract"
+msgstr "Contrarre"
+
+#: locations/models.py:180 locations/models.py:239 locations/models.py:326
+#: locations/templates/locations/unit_detail.html:43
+#: locations/templates/locations/unpaid_ledgers_list.html:16
+#: locations/templates/locations/unpaid_ledgers_list.html:26
+msgid "Lease"
+msgstr "Contratto di locazione"
+
+#: locations/models.py:181 locations/templates/locations/lease_list.html:4
+#: locations/templates/locations/lease_list.html:8 templates/base.html:161
+msgid "Leases"
+msgstr "Locazioni"
+
+#: locations/models.py:284 locations/templates/locations/unit_detail.html:177
+msgid "Lease Ledger"
+msgstr "Registro dei contratti di locazione"
+
+#: locations/models.py:285
+msgid "Lease Ledgers"
+msgstr "Registri di locazione"
+
+#: locations/models.py:347 locations/models.py:379
+#: locations/templates/locations/dashboard.html:125
+#: locations/templates/locations/dashboard.html:137
+#: locations/templates/locations/lease_detail.html:86
+#: locations/templates/locations/lease_detail.html:95
+#: locations/templates/locations/lease_ledger_print.html:262
+#: locations/templates/locations/units_with_meter_debt_list.html:16
+#: locations/templates/locations/units_with_meter_debt_list.html:24
+msgid "Unit"
+msgstr "Unità"
+
+#: locations/models.py:348 locations/templates/locations/lease_list.html:43
+#: locations/templates/locations/lease_list.html:57
+#: locations/templates/locations/location_detail.html:51
+msgid "Units"
+msgstr "Unità"
+
+#: locations/models.py:406
+msgid "Link to KESCO ElDebitorId for automatic sync"
+msgstr "Collegamento a KESCO ElDebitorId per la sincronizzazione automatica"
+
+#: locations/models.py:412
+msgid "KESCO Agency ID"
+msgstr "Codice agenzia KESCO"
+
+#: locations/models.py:418
+msgid "KESCO Consumer Name"
+msgstr "Nome del consumatore KESCO"
+
+#: locations/models.py:424
+msgid "KESCO Consumer Address"
+msgstr "Indirizzo del consumatore KESCO"
+
+#: locations/models.py:430
+msgid "KESCO Tariff Group"
+msgstr "Gruppo tariffario KESCO"
+
+#: locations/models.py:435
+msgid "KESCO Last Due Date"
+msgstr "Ultima data di scadenza KESCO"
+
+#: locations/models.py:441 locations/models.py:461
+#: locations/templates/locations/dashboard.html:127
+#: locations/templates/locations/dashboard.html:139
+#: locations/templates/locations/kesco/dashboard.html:184
+#: locations/templates/locations/kesco/dashboard.html:193
+#: locations/templates/locations/lease_ledger_print.html:263
+msgid "Meter"
+msgstr "Metro"
+
+#: locations/models.py:442
+#: locations/templates/locations/lease_ledger_print.html:242
+#: locations/templates/locations/unit_detail.html:120
+#: locations/templates/locations/units_with_meter_debt_list.html:28
+msgid "Meters"
+msgstr "Metri"
+
+#: locations/models.py:488
+msgid "Settled Date"
+msgstr "Data stabilita"
+
+#: locations/models.py:492
+msgid "Meter Ledger"
+msgstr "Registro dei contatori"
+
+#: locations/models.py:493
+msgid "Meter Ledgers"
+msgstr "Registri dei contatori"
+
+#: locations/models.py:505
+#: locations/templates/locations/lease_ledger_print.html:280
+#: locations/templates/locations/meter_ledger_list.html:56
+msgid "Open"
+msgstr "Aprire"
+
+#: locations/models.py:505
+#: locations/templates/locations/lease_ledger_print.html:280
+#: locations/templates/locations/meter_ledger_list.html:58
+msgid "Settled"
+msgstr "Sistemato"
+
+#: locations/models.py:519
+msgid "KESCO Username / Account ID"
+msgstr "Nome utente/ID account KESCO"
+
+#: locations/models.py:523
+msgid "KESCO Password"
+msgstr "KESCO Parola d'ordine"
+
+#: locations/models.py:529
+msgid "KESCO User ID"
+msgstr "ID utente KESCO"
+
+#: locations/models.py:534
+#: locations/templates/locations/kesco/credential_form.html:44
+msgid "Bearer Token"
+msgstr "Gettone del portatore"
+
+#: locations/models.py:539
+msgid "Token Obtained At"
+msgstr "Gettone ottenuto a"
+
+#: locations/models.py:544
+msgid "Token Expires At"
+msgstr "Il token scade alle"
+
+#: locations/models.py:549
+msgid "Last Sync At"
+msgstr "Ultima sincronizzazione alle"
+
+#: locations/models.py:555
+msgid "Last Sync Status"
+msgstr "Stato dell'ultima sincronizzazione"
+
+#: locations/models.py:565
+#: locations/templates/locations/kesco/credential_form.html:6
+#: locations/templates/locations/kesco/login_page.html:4
+msgid "KESCO Credential"
+msgstr "Credenziale KESCO"
+
+#: locations/models.py:566
+#: locations/templates/locations/kesco/credential_list.html:4
+#: locations/templates/locations/kesco/credential_list.html:9
+msgid "KESCO Credentials"
+msgstr "Credenziali KESCO"
+
+#: locations/models.py:721
+msgid "Parking Place"
+msgstr "Parcheggio"
+
+#: locations/models.py:722 locations/templates/locations/parking_list.html:99
+#: locations/templates/locations/unit_detail.html:52
+msgid "Parking Places"
+msgstr "Parcheggi"
+
+#: locations/templates/locations/dashboard.html:4
+#: locations/templates/locations/dashboard.html:9 templates/base.html:74
+msgid "Dashboard"
+msgstr "Pannello di controllo"
+
+#: locations/templates/locations/dashboard.html:21 locations/views.py:147
+msgid "Unpaid Leases"
+msgstr "Locazioni non pagate"
+
+#: locations/templates/locations/dashboard.html:34
+#: locations/templates/locations/dashboard.html:116 locations/views.py:168
+msgid "Units with Meter Debts"
+msgstr "Unità con debiti sul contatore"
+
+#: locations/templates/locations/dashboard.html:44
+msgid "Active Leases"
+msgstr "Locazioni attive"
+
+#: locations/templates/locations/dashboard.html:54
+#: locations/templates/locations/location_detail.html:37
+msgid "Total Units"
+msgstr "Unità totali"
+
+#: locations/templates/locations/dashboard.html:62
+msgid "Leases with Debt"
+msgstr "Locazioni con debito"
+
+#: locations/templates/locations/dashboard.html:63
+#: locations/templates/locations/dashboard.html:117
+msgid "View All"
+msgstr "Visualizza tutto"
+
+#: locations/templates/locations/dashboard.html:71
+#: locations/templates/locations/dashboard.html:81
+#: locations/templates/locations/lease_ledger_list.html:20
+#: locations/templates/locations/lease_ledger_print.html:159
+msgid "Tenant"
+msgstr "Inquilino"
+
+#: locations/templates/locations/dashboard.html:72
+#: locations/templates/locations/dashboard.html:82
+msgid "Total Debt"
+msgstr "Debito totale"
+
+#: locations/templates/locations/dashboard.html:73
+#: locations/templates/locations/dashboard.html:83
+#: locations/templates/locations/lease_detail.html:29
+#: locations/templates/locations/lease_ledger_print.html:159
+msgid "Monthly Payment"
+msgstr "Pagamento mensile"
+
+#: locations/templates/locations/dashboard.html:74
+#: locations/templates/locations/dashboard.html:84
+msgid "Periods Due"
+msgstr "Periodi dovuti"
+
+#: locations/templates/locations/dashboard.html:91
+#: locations/templates/locations/dashboard.html:141
+#: locations/templates/locations/kesco/dashboard.html:142
+msgid "View"
+msgstr "Visualizzazione"
+
+#: locations/templates/locations/dashboard.html:104
+msgid "month"
+msgstr "mese"
+
+#: locations/templates/locations/dashboard.html:105
+#: locations/templates/locations/unpaid_ledgers_list.html:43
+msgid "Debt"
+msgstr "Debito"
+
+#: locations/templates/locations/dashboard.html:128
+#: locations/templates/locations/dashboard.html:140
+#: locations/templates/locations/kesco/dashboard.html:186
+#: locations/templates/locations/kesco/dashboard.html:195
+msgid "Billed Amount"
+msgstr "Importo fatturato"
+
+#: locations/templates/locations/dashboard.html:175
+msgid "All caught up! No unpaid lease ledgers or meter debts."
+msgstr ""
+"Tutti presi! Nessun registro di locazione non pagato o debiti del contatore."
+
+#: locations/templates/locations/kesco/credential_form.html:5
+#: locations/templates/locations/parking_list.html:107
+msgid "Add"
+msgstr "Aggiungere"
+
+#: locations/templates/locations/kesco/credential_form.html:13
+msgid "KESCO"
+msgstr "KESCO"
+
+#: locations/templates/locations/kesco/credential_form.html:16
+msgid "Edit KESCO Credential"
+msgstr "Modifica credenziale KESCO"
+
+#: locations/templates/locations/kesco/credential_form.html:18
+msgid "Add KESCO Credential"
+msgstr "Aggiungi credenziale KESCO"
+
+#: locations/templates/locations/kesco/credential_form.html:26
+msgid "Username / Account ID"
+msgstr "Nome utente/ID account"
+
+#: locations/templates/locations/kesco/credential_form.html:30
+msgid "e.g. 1001324418"
+msgstr "per esempio. 1001324418"
+
+#: locations/templates/locations/kesco/credential_form.html:37
+msgid "Used for automatic token refresh"
+msgstr "Utilizzato per l'aggiornamento automatico dei token"
+
+#: locations/templates/locations/kesco/credential_form.html:39
+msgid "Leave blank to keep current password"
+msgstr "Lascia vuoto per mantenere la password corrente"
+
+#: locations/templates/locations/kesco/credential_form.html:47
+msgid "Paste the full bearer token from KESCO here"
+msgstr "Incolla qui il token al portatore completo di KESCO"
+
+#: locations/templates/locations/kesco/credential_form.html:48
+msgid "Get this from the KESCO portal login response (Data.accessToken)"
+msgstr ""
+"Ottieni questo dalla risposta di accesso al portale KESCO (Data.accessToken)"
+
+#: locations/templates/locations/kesco/credential_form.html:52
+#: locations/templates/locations/kesco/dashboard.html:110
+#: locations/templates/locations/kesco/dashboard.html:121
+#: locations/templates/locations/kesco/login_page.html:43
+msgid "User ID"
+msgstr "ID utente"
+
+#: locations/templates/locations/kesco/credential_form.html:56
+msgid "e.g. cf99fe01-b332-48cd-a73a-54be398826c5"
+msgstr "per esempio. cf99fe01-b332-48cd-a73a-54be398826c5"
+
+#: locations/templates/locations/kesco/credential_form.html:57
+msgid ""
+"Optional — found in login response as Data.userId or in JWT payload as "
+"'nameid'"
+msgstr ""
+"Facoltativo: trovato nella risposta di accesso come Data.userId o nel "
+"payload JWT come \"nameid\""
+
+#: locations/templates/locations/kesco/credential_list.html:11
+#: locations/templates/locations/kesco/dashboard.html:45
+#: locations/templates/locations/kesco/dashboard.html:96
+#: locations/templates/locations/kesco/dashboard.html:169
+msgid "Add Credential"
+msgstr "Aggiungi credenziale"
+
+#: locations/templates/locations/kesco/credential_list.html:20
+msgid "User ID:"
+msgstr "ID utente:"
+
+#: locations/templates/locations/kesco/credential_list.html:21
+msgid "Token Valid:"
+msgstr "Gettone valido:"
+
+#: locations/templates/locations/kesco/credential_list.html:23
+msgid "Yes"
+msgstr "SÌ"
+
+#: locations/templates/locations/kesco/credential_list.html:25
+msgid "No"
+msgstr "NO"
+
+#: locations/templates/locations/kesco/credential_list.html:28
+msgid "Last Sync:"
+msgstr "Ultima sincronizzazione:"
+
+#: locations/templates/locations/kesco/credential_list.html:32
+#: locations/templates/locations/kesco/dashboard.html:133
+msgid "Never"
+msgstr "Mai"
+
+#: locations/templates/locations/kesco/credential_list.html:35
+msgid "Status:"
+msgstr "Stato:"
+
+#: locations/templates/locations/kesco/credential_list.html:40
+msgid "Login via Iframe"
+msgstr "Accedi tramite Iframe"
+
+#: locations/templates/locations/kesco/credential_list.html:46
+#: locations/templates/locations/kesco/dashboard.html:147
+msgid "Sync"
+msgstr "Sincronizzazione"
+
+#: locations/templates/locations/kesco/credential_list.html:64
+msgid "No credentials configured."
+msgstr "Nessuna credenziale configurata."
+
+#: locations/templates/locations/kesco/dashboard.html:4
+#: locations/templates/locations/kesco/dashboard.html:9
+#: templates/base.html:101
+msgid "KESCO Integration"
+msgstr "Integrazione KESCO"
+
+#: locations/templates/locations/kesco/dashboard.html:17
+#: locations/templates/locations/kesco/dashboard.html:24
+#: locations/templates/locations/kesco/dashboard.html:29
+#: locations/templates/locations/kesco/dashboard.html:42
+msgid "Metric"
+msgstr "Metrico"
+
+#: locations/templates/locations/kesco/dashboard.html:18
+#: locations/templates/locations/kesco/dashboard.html:25
+#: locations/templates/locations/kesco/dashboard.html:30
+#: locations/templates/locations/kesco/dashboard.html:43
+msgid "Value"
+msgstr "Valore"
+
+#: locations/templates/locations/kesco/dashboard.html:24
+#: locations/templates/locations/kesco/dashboard.html:61
+msgid "KESCO Meters"
+msgstr "Metri KESCO"
+
+#: locations/templates/locations/kesco/dashboard.html:25
+#: locations/templates/locations/kesco/dashboard.html:62
+msgid "total"
+msgstr "totale"
+
+#: locations/templates/locations/kesco/dashboard.html:29
+#: locations/templates/locations/kesco/dashboard.html:73
+#: locations/templates/locations/kesco/dashboard.html:104
+msgid "Credentials"
+msgstr "Credenziali"
+
+#: locations/templates/locations/kesco/dashboard.html:35
+#: locations/templates/locations/kesco/dashboard.html:85
+msgid "Sync All"
+msgstr "Sincronizza tutto"
+
+#: locations/templates/locations/kesco/dashboard.html:42
+msgid "Quick Actions"
+msgstr "Azioni rapide"
+
+#: locations/templates/locations/kesco/dashboard.html:111
+#: locations/templates/locations/kesco/dashboard.html:122
+#: locations/templates/locations/kesco/login_page.html:29
+msgid "Token"
+msgstr "Gettone"
+
+#: locations/templates/locations/kesco/dashboard.html:112
+#: locations/templates/locations/kesco/dashboard.html:129
+#: locations/templates/locations/kesco/login_page.html:55
+msgid "Last Sync"
+msgstr "Ultima sincronizzazione"
+
+#: locations/templates/locations/kesco/dashboard.html:124
+#: locations/templates/locations/kesco/login_page.html:21
+msgid "Valid"
+msgstr "Valido"
+
+#: locations/templates/locations/kesco/dashboard.html:126
+msgid "Expired"
+msgstr "Scaduto"
+
+#: locations/templates/locations/kesco/dashboard.html:167
+msgid "No KESCO credentials configured."
+msgstr "Nessuna credenziale KESCO configurata."
+
+#: locations/templates/locations/kesco/dashboard.html:179
+msgid "Recent Meter Ledgers"
+msgstr "Registri dei contatori recenti"
+
+#: locations/templates/locations/kesco/dashboard.html:185
+#: locations/templates/locations/kesco/dashboard.html:194
+#: locations/templates/locations/lease_ledger_list.html:65
+#: locations/templates/locations/lease_ledger_list.html:80
+#: locations/templates/locations/lease_ledger_print.html:200
+#: locations/templates/locations/meter_ledger_list.html:39
+#: locations/templates/locations/meter_ledger_list.html:51
+#: locations/templates/locations/unit_detail.html:185
+#: locations/templates/locations/unit_detail.html:197
+msgid "Period"
+msgstr "Periodo"
+
+#: locations/templates/locations/kesco/dashboard.html:187
+#: locations/templates/locations/kesco/dashboard.html:196
+msgid "Created"
+msgstr "Creato"
+
+#: locations/templates/locations/kesco/login_page.html:18
+msgid "Token Status"
+msgstr "Stato del gettone"
+
+#: locations/templates/locations/kesco/login_page.html:23
+msgid "Not set or expired"
+msgstr "Non impostato o scaduto"
+
+#: locations/templates/locations/kesco/login_page.html:37
+msgid "Expires"
+msgstr "Scade"
+
+#: locations/templates/locations/kesco/login_page.html:65
+msgid "Sync Now"
+msgstr "Sincronizza ora"
+
+#: locations/templates/locations/kesco/login_page.html:69
+msgid "← Back to KESCO Dashboard"
+msgstr "← Torna alla dashboard KESCO"
+
+#: locations/templates/locations/lease_detail.html:11 locations/views.py:654
+msgid "Edit Lease"
+msgstr "Modifica contratto di locazione"
+
+#: locations/templates/locations/lease_detail.html:25
+msgid "Inactive"
+msgstr "Inattivo"
+
+#: locations/templates/locations/lease_detail.html:33
+msgid "Advance"
+msgstr "Anticipo"
+
+#: locations/templates/locations/lease_detail.html:34
+msgid "months"
+msgstr "mesi"
+
+#: locations/templates/locations/lease_detail.html:37
+msgid "Deposit"
+msgstr "Depositare"
+
+#: locations/templates/locations/lease_detail.html:63
+msgid "Download PDF"
+msgstr "Scarica PDF"
+
+#: locations/templates/locations/lease_detail.html:77
+msgid "Assigned Units"
+msgstr "Unità assegnate"
+
+#: locations/templates/locations/lease_detail.html:78
+#: locations/templates/locations/lease_ledger_list.html:4
+#: locations/templates/locations/lease_ledger_list.html:8
+#: locations/templates/locations/lease_ledger_print.html:6
+#: locations/templates/locations/lease_ledger_print.html:158
+msgid "Payment Ledger"
+msgstr "Registro dei pagamenti"
+
+#: locations/templates/locations/lease_detail.html:88
+#: locations/templates/locations/lease_detail.html:99
+#: locations/templates/locations/lease_ledger_print.html:264
+#: locations/templates/locations/location_detail.html:63
+#: locations/templates/locations/location_detail.html:77
+#: locations/templates/locations/meter_ledger_list.html:19
+#: locations/templates/locations/unit_detail.html:22
+#: locations/templates/locations/unit_detail.html:132
+#: locations/templates/locations/unit_detail.html:146
+msgid "Type"
+msgstr "Tipo"
+
+#: locations/templates/locations/lease_detail.html:89
+#: locations/templates/locations/lease_detail.html:100
+#: locations/templates/locations/unit_detail.html:34
+msgid "Area"
+msgstr "Zona"
+
+#: locations/templates/locations/lease_detail.html:108
+msgid "No units assigned to this lease. Edit a unit to assign it."
+msgstr ""
+"Nessuna unità assegnata a questo contratto di locazione. Modifica un'unità "
+"per assegnarla."
+
+#: locations/templates/locations/lease_ledger_form.html:9
+#: locations/templates/locations/meter_ledger_form.html:9
+msgid "Back to Ledger"
+msgstr "Torniamo al registro"
+
+#: locations/templates/locations/lease_ledger_list.html:11
+#: locations/templates/locations/meter_ledger_list.html:11
+msgid "+ Add Entry"
+msgstr "+ Aggiungi voce"
+
+#: locations/templates/locations/lease_ledger_list.html:13
+msgid "Back to Lease"
+msgstr "Torniamo al noleggio"
+
+#: locations/templates/locations/lease_ledger_list.html:24
+#: locations/templates/locations/lease_list.html:42
+#: locations/templates/locations/lease_list.html:56
+msgid "Monthly"
+msgstr "Mensile"
+
+#: locations/templates/locations/lease_ledger_list.html:28
+#: locations/templates/locations/lease_ledger_print.html:164
+msgid "Total Due"
+msgstr "Totale dovuto"
+
+#: locations/templates/locations/lease_ledger_list.html:32
+#: locations/templates/locations/lease_ledger_print.html:168
+msgid "Total Paid"
+msgstr "Totale pagato"
+
+#: locations/templates/locations/lease_ledger_list.html:36
+#: locations/templates/locations/lease_ledger_print.html:172
+msgid "Remaining Balance"
+msgstr "Saldo rimanente"
+
+#: locations/templates/locations/lease_ledger_list.html:55
+#: locations/templates/locations/lease_list.html:61
+msgid "Print / PDF"
+msgstr "Stampa/PDF"
+
+#: locations/templates/locations/lease_ledger_list.html:66
+#: locations/templates/locations/lease_ledger_list.html:81
+#: locations/templates/locations/lease_ledger_print.html:201
+#: locations/templates/locations/unit_detail.html:186
+#: locations/templates/locations/unit_detail.html:198
+msgid "Due"
+msgstr "Dovuto"
+
+#: locations/templates/locations/lease_ledger_list.html:68
+#: locations/templates/locations/lease_ledger_list.html:85
+#: locations/templates/locations/lease_ledger_print.html:203
+#: locations/templates/locations/unit_detail.html:188
+#: locations/templates/locations/unit_detail.html:202
+msgid "Balance"
+msgstr "Bilancia"
+
+#: locations/templates/locations/lease_ledger_list.html:71
+#: locations/templates/locations/lease_ledger_list.html:110
+#: locations/templates/locations/unit_detail.html:191
+#: locations/templates/locations/unit_detail.html:221
+msgid "Slip"
+msgstr "Scontrino"
+
+#: locations/templates/locations/lease_ledger_list.html:100
+#: locations/templates/locations/lease_ledger_print.html:226
+#: locations/templates/locations/unit_detail.html:211
+msgid "Credit"
+msgstr "Credito"
+
+#: locations/templates/locations/lease_ledger_list.html:137
+#: locations/templates/locations/meter_ledger_list.html:85
+msgid "No ledger entries yet."
+msgstr "Nessuna voce contabile ancora."
+
+#: locations/templates/locations/lease_ledger_list.html:147
+#: locations/templates/locations/lease_list.html:88
+#: locations/templates/locations/meter_ledger_list.html:95
+#, python-format
+msgid "Page %(number)s of %(pages)s"
+msgstr "Pagina %(number)s di %(pages)s"
+
+#: locations/templates/locations/lease_ledger_list.html:151
+#: locations/templates/locations/lease_ledger_list.html:153
+#: locations/templates/locations/lease_list.html:92
+#: locations/templates/locations/lease_list.html:94
+#: locations/templates/locations/location_detail.html:123
+#: locations/templates/locations/location_detail.html:125
+#: locations/templates/locations/location_list.html:70
+#: locations/templates/locations/location_list.html:72
+#: locations/templates/locations/meter_ledger_list.html:99
+#: locations/templates/locations/meter_ledger_list.html:101
+#: locations/templates/locations/units_with_meter_debt_list.html:49
+#: locations/templates/locations/units_with_meter_debt_list.html:51
+#: locations/templates/locations/unpaid_ledgers_list.html:57
+#: locations/templates/locations/unpaid_ledgers_list.html:59
+msgid "Previous"
+msgstr "Precedente"
+
+#: locations/templates/locations/lease_ledger_list.html:156
+#: locations/templates/locations/lease_ledger_list.html:158
+#: locations/templates/locations/lease_list.html:97
+#: locations/templates/locations/lease_list.html:99
+#: locations/templates/locations/location_detail.html:129
+#: locations/templates/locations/location_detail.html:131
+#: locations/templates/locations/location_list.html:76
+#: locations/templates/locations/location_list.html:78
+#: locations/templates/locations/meter_ledger_list.html:104
+#: locations/templates/locations/meter_ledger_list.html:106
+#: locations/templates/locations/units_with_meter_debt_list.html:54
+#: locations/templates/locations/units_with_meter_debt_list.html:56
+#: locations/templates/locations/unpaid_ledgers_list.html:62
+#: locations/templates/locations/unpaid_ledgers_list.html:64
+msgid "Next"
+msgstr "Prossimo"
+
+#: locations/templates/locations/lease_ledger_list.html:166
+msgid "No payment entries yet. Click '+ Add Entry' to record a payment."
+msgstr ""
+"Nessuna voce di pagamento ancora. Fai clic su \"+ Aggiungi voce\" per "
+"registrare un pagamento."
+
+#: locations/templates/locations/lease_ledger_print.html:184
+#: locations/templates/locations/unpaid_ledgers_list.html:19
+#: locations/templates/locations/unpaid_ledgers_list.html:39
+msgid "Entries"
+msgstr "Voci"
+
+#: locations/templates/locations/lease_ledger_print.html:191
+msgid "Payment notice"
+msgstr "Avviso di pagamento"
+
+#: locations/templates/locations/lease_ledger_print.html:192
+msgid ""
+"This document is for information only. Payments are considered paid only "
+"when the payment slip has been submitted and is verifiable by the bank or a "
+"third-party financial institution."
+msgstr ""
+"Questo documento è solo informativo. I pagamenti si intendono effettuati "
+"solo nel momento in cui la ricevuta di versamento è stata presentata ed è "
+"verificabile dalla banca o da un istituto finanziario terzo."
+
+#: locations/templates/locations/lease_ledger_print.html:196
+msgid "Lease Payment Ledger"
+msgstr "Registro dei pagamenti di locazione"
+
+#: locations/templates/locations/lease_ledger_print.html:239
+msgid "Meter Standings"
+msgstr "Classifica del contatore"
+
+#: locations/templates/locations/lease_ledger_print.html:246
+msgid "Open Meter Expenses"
+msgstr "Spese contatore aperto"
+
+#: locations/templates/locations/lease_ledger_print.html:250
+msgid "Settled Meter Expenses"
+msgstr "Spese del contatore saldate"
+
+#: locations/templates/locations/lease_ledger_print.html:254
+msgid "Meter Outstanding Total"
+msgstr "Totale contatori eccezionali"
+
+#: locations/templates/locations/lease_ledger_print.html:265
+#: locations/templates/locations/unpaid_ledgers_list.html:17
+#: locations/templates/locations/unpaid_ledgers_list.html:29
+msgid "Latest Period"
+msgstr "Ultimo periodo"
+
+#: locations/templates/locations/lease_ledger_print.html:267
+#: locations/templates/locations/meter_ledger_list.html:41
+#: locations/templates/locations/meter_ledger_list.html:53
+msgid "Outstanding Amount"
+msgstr "Importo eccezionale"
+
+#: locations/templates/locations/lease_ledger_print.html:284
+msgid "No meters assigned to this lease."
+msgstr "Nessun contatore assegnato a questo contratto di locazione."
+
+#: locations/templates/locations/lease_ledger_print.html:291
+msgid "Report generated on"
+msgstr "Rapporto generato il"
+
+#: locations/templates/locations/lease_list.html:10
+msgid "+ New Lease"
+msgstr "+ Nuovo contratto di locazione"
+
+#: locations/templates/locations/lease_list.html:21
+msgid "Search by lease ID, name, or phone..."
+msgstr "Cerca per ID contratto di locazione, nome o telefono..."
+
+#: locations/templates/locations/lease_list.html:23
+msgid "Clear"
+msgstr "Chiaro"
+
+#: locations/templates/locations/lease_list.html:30
+#, python-format
+msgid "%(count)s result%(count|pluralize)s for \"%(query)s\""
+msgstr "%(count)s risultato%(count|pluralize)s per \"%(query)s\""
+
+#: locations/templates/locations/lease_list.html:78
+msgid "No leases found."
+msgstr "Nessun contratto di locazione trovato."
+
+#: locations/templates/locations/lease_list.html:107
+msgid "No leases found. Click '+ New Lease' to create one."
+msgstr ""
+"Nessun contratto di locazione trovato. Fare clic su \"+ Nuovo contratto di "
+"locazione\" per crearne uno."
+
+#: locations/templates/locations/location_detail.html:11
+#: locations/views.py:208
+msgid "Edit Location"
+msgstr "Modifica posizione"
+
+#: locations/templates/locations/location_detail.html:33
+msgid "Open in Google Maps"
+msgstr "Apri in Google Maps"
+
+#: locations/templates/locations/location_detail.html:41
+#: locations/templates/locations/unit_detail.html:38
+#: locations/templates/locations/unit_detail.html:97 templates/base.html:139
+msgid "Parking"
+msgstr "Parcheggio"
+
+#: locations/templates/locations/location_detail.html:53
+msgid "+ Add Unit"
+msgstr "+ Aggiungi unità"
+
+#: locations/templates/locations/location_detail.html:82
+#: locations/templates/locations/unit_detail.html:28
+msgid "Leased"
+msgstr "Affittato"
+
+#: locations/templates/locations/location_detail.html:84
+#: locations/templates/locations/unit_detail.html:30
+msgid "Vacant"
+msgstr "Vacante"
+
+#: locations/templates/locations/location_detail.html:106
+msgid "No units yet."
+msgstr "Nessuna unità ancora."
+
+#: locations/templates/locations/location_detail.html:117
+#: locations/templates/locations/location_list.html:64
+#, python-format
+msgid ""
+"\n"
+"                Page %(number)s of %(pages)s\n"
+"            "
+msgstr ""
+"\n"
+"Pagina %(number)s di %(pages)s"
+
+#: locations/templates/locations/location_detail.html:139
+msgid "No units found."
+msgstr "Nessuna unità trovata."
+
+#: locations/templates/locations/location_list.html:10
+msgid "+ New Location"
+msgstr "+ Nuova posizione"
+
+#: locations/templates/locations/location_list.html:19
+#: locations/templates/locations/location_list.html:31
+#: locations/templates/locations/unit_detail.html:131
+#: locations/templates/locations/unit_detail.html:143
+msgid "Name"
+msgstr "Nome"
+
+#: locations/templates/locations/location_list.html:38
+msgid "Open Map"
+msgstr "Apri mappa"
+
+#: locations/templates/locations/location_list.html:86
+msgid "No locations found."
+msgstr "Nessuna posizione trovata."
+
+#: locations/templates/locations/meter_form.html:9
+#: locations/templates/locations/meter_ledger_list.html:13
+msgid "Back to Unit"
+msgstr "Ritorno all'Unità"
+
+#: locations/templates/locations/meter_ledger_list.html:4
+msgid "Ledger"
+msgstr "Registro"
+
+#: locations/templates/locations/meter_ledger_list.html:8
+msgid "Monthly Ledger"
+msgstr "Registro mensile"
+
+#: locations/templates/locations/meter_ledger_list.html:28
+#: locations/templates/locations/unit_detail.html:134
+#: locations/templates/locations/unit_detail.html:148
+msgid "Serial"
+msgstr "Seriale"
+
+#: locations/templates/locations/meter_ledger_list.html:42
+#: locations/templates/locations/meter_ledger_list.html:54
+msgid "Tenant Expense Status"
+msgstr "Stato delle spese dell'inquilino"
+
+#: locations/templates/locations/meter_ledger_list.html:67
+msgid "Reset this tenant expense to zero after verifying payment?"
+msgstr "Azzerare la spesa dell'inquilino dopo aver verificato il pagamento?"
+
+#: locations/templates/locations/meter_ledger_list.html:69
+msgid "Reset to Zero"
+msgstr "Ripristina a zero"
+
+#: locations/templates/locations/meter_ledger_list.html:114
+msgid "No ledger entries. Click '+ Add Entry' to create one."
+msgstr ""
+"Nessuna voce di registro. Fai clic su \"+ Aggiungi voce\" per crearne uno."
+
+#: locations/templates/locations/parking_bulk_form.html:9
+#: locations/templates/locations/parking_form.html:9
+#: locations/templates/locations/parking_list.html:12
+#: locations/templates/locations/unit_detail.html:14
+#: locations/templates/locations/unit_form.html:9
+msgid "Back to Location"
+msgstr "Torna alla posizione"
+
+#: locations/templates/locations/parking_bulk_form.html:49
+msgid "Create All"
+msgstr "Crea tutto"
+
+#: locations/templates/locations/parking_bulk_form.html:56
+msgid "Example Input"
+msgstr "Ingresso di esempio"
+
+#: locations/templates/locations/parking_bulk_form.html:62
+msgid ""
+"Each label will create one parking place. Duplicates will be skipped with a "
+"warning."
+msgstr ""
+"Ogni etichetta creerà un posto auto. I duplicati verranno ignorati con un "
+"avviso."
+
+#: locations/templates/locations/parking_list.html:4
+#: locations/templates/locations/parking_list.html:9
+msgid "Parking Management"
+msgstr "Gestione dei parcheggi"
+
+#: locations/templates/locations/parking_list.html:14
+msgid "Back to Locations"
+msgstr "Torna alle posizioni"
+
+#: locations/templates/locations/parking_list.html:30
+msgid "Total Parking"
+msgstr "Parcheggio totale"
+
+#: locations/templates/locations/parking_list.html:42
+#: locations/templates/locations/parking_list.html:141
+msgid "Assigned"
+msgstr "Assegnato"
+
+#: locations/templates/locations/parking_list.html:53
+#: locations/templates/locations/parking_list.html:143
+msgid "Available"
+msgstr "Disponibile"
+
+#: locations/templates/locations/parking_list.html:64
+msgid "Show All"
+msgstr "Mostra tutto"
+
+#: locations/templates/locations/parking_list.html:73
+msgid "All Shown"
+msgstr "Tutto mostrato"
+
+#: locations/templates/locations/parking_list.html:84
+msgid "All Locations"
+msgstr "Tutte le località"
+
+#: locations/templates/locations/parking_list.html:101
+msgid "All Parking Places"
+msgstr "Tutti i parcheggi"
+
+#: locations/templates/locations/parking_list.html:110
+msgid "Bulk Add"
+msgstr "Aggiunta in blocco"
+
+#: locations/templates/locations/parking_list.html:180
+msgid "No parking places found."
+msgstr "Nessun parcheggio trovato."
+
+#: locations/templates/locations/parking_list.html:183
+msgid "Add Parking"
+msgstr "Aggiungi parcheggio"
+
+#: locations/templates/locations/unit_detail.html:12 locations/views.py:270
+msgid "Edit Unit"
+msgstr "Modifica unità"
+
+#: locations/templates/locations/unit_detail.html:77
+msgid "Unassign this parking?"
+msgstr "Annullare l'assegnazione di questo parcheggio?"
+
+#: locations/templates/locations/unit_detail.html:78
+msgid "Unassign"
+msgstr "Annulla assegnazione"
+
+#: locations/templates/locations/unit_detail.html:90
+msgid "No parking places assigned to this unit."
+msgstr "Nessun posto auto assegnato a questa unità."
+
+#: locations/templates/locations/unit_detail.html:98
+msgid "Assign Parking Place"
+msgstr "Assegnare il parcheggio"
+
+#: locations/templates/locations/unit_detail.html:103
+msgid "Select an available parking place"
+msgstr "Seleziona un parcheggio disponibile"
+
+#: locations/templates/locations/unit_detail.html:105
+msgid "Select..."
+msgstr "Selezionare..."
+
+#: locations/templates/locations/unit_detail.html:112
+msgid "Assign"
+msgstr "Assegnare"
+
+#: locations/templates/locations/unit_detail.html:122
+msgid "+ Add Meter"
+msgstr "+ Aggiungi contatore"
+
+#: locations/templates/locations/unit_detail.html:170
+msgid "No meters installed."
+msgstr "Nessun contatore installato."
+
+#: locations/templates/locations/unit_detail.html:178
+msgid "View Full Ledger"
+msgstr "Visualizza il registro completo"
+
+#: locations/templates/locations/units_with_meter_debt_list.html:18
+msgid "Meters with Debt"
+msgstr "Contatori con debito"
+
+#: locations/templates/locations/units_with_meter_debt_list.html:45
+#: locations/templates/locations/unpaid_ledgers_list.html:53
+#, python-format
+msgid "Page %(number)s of %(paginator.num_pages)s"
+msgstr "Pagina %(number)s di %(paginator.num_pages)s"
+
+#: locations/templates/locations/units_with_meter_debt_list.html:63
+msgid "No units with meter debts found."
+msgstr "Nessuna unità con debiti al contatore trovata."
+
+#: locations/templates/locations/unpaid_ledgers_list.html:18
+#: locations/templates/locations/unpaid_ledgers_list.html:36
+msgid "Total Unpaid"
+msgstr "Totale non pagato"
+
+#: locations/templates/locations/unpaid_ledgers_list.html:71
+msgid "No unpaid lease ledger entries found."
+msgstr "Nessun movimento contabile di locazione non pagato trovato."
+
+#: locations/views.py:190
+#, python-brace-format
+msgid "Location \"{name}\" created successfully."
+msgstr "Posizione \"{name}\" creata correttamente."
+
+#: locations/views.py:194
+msgid "Create Location"
+msgstr "Crea posizione"
+
+#: locations/views.py:204
+#, python-brace-format
+msgid "Location \"{name}\" updated successfully."
+msgstr "Posizione \"{name}\" aggiornata correttamente."
+
+#: locations/views.py:217
+#, python-brace-format
+msgid "Location \"{name}\" deleted successfully."
+msgstr "Posizione \"{name}\" eliminata correttamente."
+
+#: locations/views.py:249
+#, python-brace-format
+msgid "Unit \"{name}\" created successfully."
+msgstr "Unità \"{name}\" creata correttamente."
+
+#: locations/views.py:254
+msgid "Add Unit"
+msgstr "Aggiungi unità"
+
+#: locations/views.py:265
+#, python-brace-format
+msgid "Unit \"{name}\" updated successfully."
+msgstr "Unità \"{name}\" aggiornata correttamente."
+
+#: locations/views.py:280
+#, python-brace-format
+msgid "Unit \"{name}\" deleted successfully."
+msgstr "Unità \"{name}\" eliminata correttamente."
+
+#: locations/views.py:324
+#, python-brace-format
+msgid "Parking \"{label}\" assigned to this unit."
+msgstr "Parcheggio \"{label}\" assegnato a questa unità."
+
+#: locations/views.py:338
+#, python-brace-format
+msgid "Parking \"{label}\" unassigned from this unit."
+msgstr "Parcheggio \"{label}\" non assegnato a questa unità."
+
+#: locations/views.py:355
+#, python-brace-format
+msgid "Meter \"{name}\" created successfully."
+msgstr "Contatore \"{name}\" creato correttamente."
+
+#: locations/views.py:360
+msgid "Add Meter"
+msgstr "Aggiungi contatore"
+
+#: locations/views.py:371
+#, python-brace-format
+msgid "Meter \"{name}\" updated successfully."
+msgstr "Contatore \"{name}\" aggiornato correttamente."
+
+#: locations/views.py:376
+msgid "Edit Meter"
+msgstr "Modifica contatore"
+
+#: locations/views.py:386
+#, python-brace-format
+msgid "Meter \"{name}\" deleted successfully."
+msgstr "Contatore \"{name}\" eliminato correttamente."
+
+#: locations/views.py:414 locations/views.py:784
+msgid "Ledger entry created successfully."
+msgstr "Voce contabile creata correttamente."
+
+#: locations/views.py:419 locations/views.py:789
+msgid "Add Ledger Entry"
+msgstr "Aggiungi voce contabile"
+
+#: locations/views.py:430 locations/views.py:800
+msgid "Ledger entry updated successfully."
+msgstr "Voce contabile aggiornata correttamente."
+
+#: locations/views.py:435 locations/views.py:805
+msgid "Edit Ledger Entry"
+msgstr "Modifica voce contabile"
+
+#: locations/views.py:446
+msgid "Meter expense reset to zero because the tenant payment was verified."
+msgstr ""
+"Spesa del contatore azzerata perché il pagamento dell'inquilino è stato "
+"verificato."
+
+#: locations/views.py:455 locations/views.py:814
+msgid "Ledger entry deleted successfully."
+msgstr "Voce contabile eliminata correttamente."
+
+#: locations/views.py:472
+#, python-brace-format
+msgid "Parking place \"{label}\" created."
+msgstr "Parcheggio \"{label}\" creato."
+
+#: locations/views.py:477
+msgid "Add Parking Place"
+msgstr "Aggiungi parcheggio"
+
+#: locations/views.py:498
+#, python-brace-format
+msgid "Parking place \"{label}\" already exists, skipped."
+msgstr "Il parcheggio \"{label}\" esiste già, saltato."
+
+#: locations/views.py:510
+#, python-brace-format
+msgid "Successfully created {count} parking place(s)."
+msgstr "{count} parcheggio/i creati con successo."
+
+#: locations/views.py:519
+msgid "Add Parking Places"
+msgstr "Aggiungi posti auto"
+
+#: locations/views.py:571
+#, python-brace-format
+msgid "Parking place \"{label}\" updated."
+msgstr "Parcheggio \"{label}\" aggiornato."
+
+#: locations/views.py:576
+msgid "Edit Parking Place"
+msgstr "Modifica parcheggio"
+
+#: locations/views.py:586
+#, python-brace-format
+msgid "Parking place \"{label}\" deleted."
+msgstr "Parcheggio \"{label}\" eliminato."
+
+#: locations/views.py:633
+#, python-brace-format
+msgid "Lease \"{name}\" created successfully."
+msgstr "Il lease \"{name}\" è stato creato correttamente."
+
+#: locations/views.py:638
+msgid "Create Lease"
+msgstr "Crea contratto di locazione"
+
+#: locations/views.py:649
+#, python-brace-format
+msgid "Lease \"{name}\" updated successfully."
+msgstr "Il lease \"{name}\" è stato aggiornato correttamente."
+
+#: locations/views.py:664
+#, python-brace-format
+msgid "Lease \"{name}\" deleted successfully."
+msgstr "Il lease \"{name}\" è stato eliminato correttamente."
+
+#: templates/base.html:15
+msgid "Menu"
+msgstr "Menu"
+
+#: templates/base.html:50
+msgid "Logout"
+msgstr "Esci"
+
+#: templates/base.html:61
+msgid "Collapse sidebar"
+msgstr "Comprimi la barra laterale"
+
+#: templates/base.html:95
+msgid "User Management"
+msgstr "Gestione utenti"
+
+#: templates/base.html:123
+msgid "Location Management"
+msgstr "Gestione della posizione"

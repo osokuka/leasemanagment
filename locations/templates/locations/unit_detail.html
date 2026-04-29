@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ unit.name }} - Bibaj Menaxhment{% endblock %}
+{% block title %}{{ unit.name }} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <!-- Back Navigation -->
 <div class="page-header">
     <h1>{{ unit.name }}</h1>
-    <div class="flex gap-8">
+    <div class="flex gap-8 flex-wrap">
         {% if user.is_admin %}
         <a href="/locations/{{ unit.location.uuid }}/unit/{{ unit.uuid }}/edit/" class="btn btn--secondary">{% trans "Edit Unit" %}</a>
         {% endif %}
@@ -16,14 +16,14 @@
 </div>
 
 <!-- Unit Info Card -->
-<div class="card mb-24">
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+<div class="card mb-16">
+    <div class="grid grid--4col gap-12">
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Type" %}</span>
+            <span class="summary-label">{% trans "Type" %}</span>
             <span class="badge badge--{{ unit.unit_type }}">{{ unit.get_unit_type_display }}</span>
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Status" %}</span>
+            <span class="summary-label">{% trans "Status" %}</span>
             {% if unit.is_leased %}
             <span class="badge badge--leased">{% trans "Leased" %}</span>
             {% else %}
@@ -31,17 +31,17 @@
             {% endif %}
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Area" %}</span>
-            <span style="font-size:14px; font-weight:600;">{{ unit.sqm }} m²</span>
+            <span class="summary-label">{% trans "Area" %}</span>
+            <span class="text-strong">{{ unit.sqm }} m²</span>
         </div>
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Parking Places" %}</span>
-            <span style="font-size:14px; font-weight:600;">{{ parking.count }}</span>
+            <span class="summary-label">{% trans "Parking" %}</span>
+            <span class="text-strong">{{ parking.count }}</span>
         </div>
         {% if unit.lease %}
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Lease" %}</span>
-            <a href="/leases/{{ unit.lease.uuid }}/" style="font-size:14px; color:var(--accent-primary);">{{ unit.lease }}</a>
+            <span class="summary-label">{% trans "Lease" %}</span>
+            <a href="/leases/{{ unit.lease.uuid }}/">{{ unit.lease }}</a>
         </div>
         {% endif %}
     </div>
@@ -49,14 +49,11 @@
 
 <!-- Parking Section -->
 <div class="page-header">
-    <h2 style="font-size:20px; font-weight:600;">{% trans "Parking Places" %}</h2>
-    {% if user.is_admin %}
-    <a href="/locations/{{ unit.location.uuid }}/parking/create/" class="btn btn--primary">{% trans "+ Add Parking" %}</a>
-    {% endif %}
+    <h2>{% trans "Parking Places" %}</h2>
 </div>
 
 {% if parking %}
-<div class="card mb-24" style="padding:0; overflow:hidden;">
+<div class="card card--flush mb-16">
     <table class="table">
         <thead>
             <tr>
@@ -71,19 +68,22 @@
             {% for p in parking %}
             <tr>
                 <td data-label="{% trans "Label" %}"><strong>{{ p.label }}</strong></td>
-                <td data-label="{% trans "Covered" %}">{% if p.covered %}✅{% else %}—{% endif %}</td>
+                <td data-label="{% trans "Covered" %}">
+                    {% if p.covered %}
+                    <span class="badge badge--active">{% trans "Covered" %}</span>
+                    {% else %}
+                    <span class="badge badge--inactive">{% trans "Open" %}</span>
+                    {% endif %}
+                </td>
                 {% if user.is_admin %}
                 <td onclick="event.stopPropagation()">
-                    <div class="flex gap-8">
-                        <a href="/locations/{{ unit.location.uuid }}/parking/{{ p.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
-                        {% if user.is_super_user %}
-                        <form action="/locations/{{ unit.location.uuid }}/parking/{{ p.uuid }}/delete/" method="post"
-                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
-                        </form>
-                        {% endif %}
-                    </div>
+                    <form action="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/unassign-parking/{{ p.uuid }}/" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--secondary btn--small"
+                                onclick="return confirm('{% trans "Unassign this parking?" %}')">
+                            {% trans "Unassign" %}
+                        </button>
+                    </form>
                 </td>
                 {% endif %}
             </tr>
@@ -92,21 +92,45 @@
     </table>
 </div>
 {% else %}
-<div class="card mb-24 text-center" style="padding:32px; color:var(--text-secondary);">
+<div class="card mb-16 empty-state empty-state--compact">
     {% trans "No parking places assigned to this unit." %}
+</div>
+{% endif %}
+
+{% if available_parking and user.is_admin %}
+<div class="form-shell form-shell--narrow">
+    <div class="form-shell__intro">
+        <span class="form-shell__eyebrow">{% trans "Parking" %}</span>
+        <h2>{% trans "Assign Parking Place" %}</h2>
+    </div>
+    <form action="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/assign-parking/" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="parking_uuid">{% trans "Select an available parking place" %}</label>
+            <select name="parking_uuid" id="parking_uuid" class="form-select" required>
+                <option value="">{% trans "Select..." %}</option>
+                {% for p in available_parking %}
+                <option value="{{ p.uuid }}">{{ p.label }}{% if p.covered %} ({% trans "Covered" %}){% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">{% trans "Assign" %}</button>
+        </div>
+    </form>
 </div>
 {% endif %}
 
 <!-- Meters Section -->
 <div class="page-header">
-    <h2 style="font-size:20px; font-weight:600;">{% trans "Meters" %}</h2>
+    <h2>{% trans "Meters" %}</h2>
     {% if user.is_admin %}
-    <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meter/create/" class="btn btn--primary">{% trans "+ Add Meter" %}</a>
+    <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meter/create/" class="btn btn--primary btn--small">{% trans "+ Add Meter" %}</a>
     {% endif %}
 </div>
 
 {% if meters %}
-<div class="card mb-24" style="padding:0; overflow:hidden;">
+<div class="card card--flush mb-16">
     <table class="table">
         <thead>
             <tr>
@@ -130,11 +154,11 @@
                 <td data-label="{% trans "Serial" %}">{{ m.serial_number|default:"—" }}</td>
                 {% if user.is_admin %}
                 <td onclick="event.stopPropagation()">
-                    <div class="flex gap-8">
+                    <div class="flex gap-8 flex-wrap">
                         <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meter/{{ m.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
                         {% if user.is_super_user %}
                         <form action="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/meter/{{ m.uuid }}/delete/" method="post"
-                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
                         </form>
@@ -148,19 +172,19 @@
     </table>
 </div>
 {% else %}
-<div class="card text-center" style="padding:32px; color:var(--text-secondary);">
-    {% trans "No meters installed. Click '+ Add Meter' to create one." %}
+<div class="card empty-state empty-state--compact">
+    {% trans "No meters installed." %}
 </div>
 {% endif %}
 
 <!-- Lease Ledger Section -->
 {% if unit.lease and lease_ledgers %}
-<div class="page-header mt-24">
-    <h2 style="font-size:20px; font-weight:600;">{% trans "Lease Ledger" %} — {{ unit.lease.display_id }}</h2>
-    <a href="/leases/{{ unit.lease.uuid }}/ledger/" class="btn btn--secondary">{% trans "View Full Ledger" %}</a>
+<div class="page-header">
+    <h2>{% trans "Lease Ledger" %} — {{ unit.lease.display_id }}</h2>
+    <a href="/leases/{{ unit.lease.uuid }}/ledger/" class="btn btn--secondary btn--small">{% trans "View Full Ledger" %}</a>
 </div>
 
-<div class="card mb-24" style="padding:0; overflow:hidden;">
+<div class="card card--flush mb-16">
     <table class="table">
         <thead>
             <tr>
@@ -182,7 +206,7 @@
                     {% if entry.amount_paid > 0 %}€{{ entry.amount_paid }}{% else %}—{% endif %}
                 </td>
                 <td data-label="{% trans "Balance" %}">
-                    <strong style="color:{% if entry.running_balance > 0 %}var(--error){% elif entry.running_balance < 0 %}var(--success){% else %}var(--text-secondary){% endif %};">
+                    <strong class="{% if entry.running_balance > 0 %}text-error{% elif entry.running_balance < 0 %}text-success{% else %}text-neutral{% endif %}">
                         €{{ entry.running_balance|floatformat:2 }}
                     </strong>
                 </td>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ title }} — Bibaj Menaxhment{% endblock %}
+{% block title %}{{ title }} — {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -22,7 +22,7 @@
         {% for unit in page_obj %}
         <tr class="clickable">
             <td data-label="{% trans 'Unit' %}">
-                <a href="{% url 'unit_detail' location_uuid=unit.location.uuid unit_uuid=unit.uuid %}">{{ unit.name }}</a>
+                <a href="{% url 'locations:unit_detail' location_uuid=unit.location.uuid unit_uuid=unit.uuid %}">{{ unit.name }}</a>
             </td>
             <td data-label="{% trans 'Location' %}">{{ unit.location.name }}</td>
             <td data-label="{% trans 'Meters' %}">

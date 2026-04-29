@@ -6,7 +6,8 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 from django.conf import settings
-from .models import User, Role
+from django import forms
+from .models import ApiKeyScope, User, Role, CompanyProfile, UserApiKey
 from .forms import UserCreationFormCustom, UserChangeFormCustom
 
 
@@ -94,8 +95,8 @@ def user_create(request):
 
 
 @login_required
-def user_update(request, pk):
-    editing_user = get_object_or_404(User, pk=pk)
+def user_update(request, uuid):
+    editing_user = get_object_or_404(User, uuid=uuid)
     can_edit_profile = can_edit_user_profile(request.user, editing_user)
     can_reset_password = can_reset_user_password(request.user, editing_user)
 
@@ -128,13 +129,16 @@ def user_update(request, pk):
         'editing_user': editing_user,
         'can_edit_profile': can_edit_profile,
         'can_reset_password': can_reset_password,
+        'api_keys': editing_user.api_keys.all().order_by('-created_at') if can_edit_profile else [],
+        'api_key_scope': ApiKeyScope.KESCO_METER_WRITE,
+        'api_key_scopes': ApiKeyScope.choices,
     })
 
 
 @super_user_required
 @require_POST
-def user_delete(request, pk):
-    user = get_object_or_404(User, pk=pk)
+def user_delete(request, uuid):
+    user = get_object_or_404(User, uuid=uuid)
     if user == request.user:
         messages.error(request, _('You cannot delete yourself.'))
         return redirect('accounts:user_list')
@@ -142,6 +146,50 @@ def user_delete(request, pk):
     user.delete()
     messages.success(request, _('User "{user}" deleted successfully.').format(user=username))
     return redirect('accounts:user_list')
+
+
+@admin_required
+@require_POST
+def user_api_key_create(request, uuid):
+    target = get_object_or_404(User, uuid=uuid)
+    if not can_edit_user_profile(request.user, target):
+        raise PermissionDenied
+
+    allowed_scopes = {
+        ApiKeyScope.KESCO_METER_WRITE,
+        ApiKeyScope.LEASE_REPORT_READ,
+        ApiKeyScope.SETTLEMENT_WRITE,
+    }
+    scope = request.POST.get('scope', ApiKeyScope.KESCO_METER_WRITE)
+    if scope not in allowed_scopes:
+        messages.error(request, _('Invalid API key scope.'))
+        return redirect('accounts:user_update', uuid=target.uuid)
+
+    name = request.POST.get('name', '').strip() or _('KESCO external tool')
+    api_key, raw_key = UserApiKey.create_key(
+        user=target,
+        name=name,
+        scope=scope,
+    )
+    messages.warning(
+        request,
+        _('API key created. Copy it now; it will not be shown again: {key}').format(key=raw_key),
+    )
+    return redirect('accounts:user_update', uuid=target.uuid)
+
+
+@admin_required
+@require_POST
+def user_api_key_revoke(request, uuid, key_uuid):
+    target = get_object_or_404(User, uuid=uuid)
+    if not can_edit_user_profile(request.user, target):
+        raise PermissionDenied
+
+    api_key = get_object_or_404(UserApiKey, uuid=key_uuid, user=target)
+    api_key.is_active = False
+    api_key.save(update_fields=['is_active', 'updated_at'])
+    messages.success(request, _('API key "{name}" revoked.').format(name=api_key.name))
+    return redirect('accounts:user_update', uuid=target.uuid)
 
 
 @login_required
@@ -154,3 +202,49 @@ def set_language_view(request):
         request.user.preferred_language = lang
         request.user.save(update_fields=['preferred_language'])
     return redirect(request.POST.get('next', '/dashboard/'))
+
+
+# --- Company Profile ---
+class CompanyProfileForm(forms.ModelForm):
+    class Meta:
+        model = CompanyProfile
+        fields = [
+            'company_name', 'tax_number', 'registration_number',
+            'address', 'city', 'phone', 'email', 'website',
+            'logo', 'fiscal_code', 'nipt',
+        ]
+        widgets = {
+            'address': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if hasattr(field, 'widget'):
+                if isinstance(field.widget, forms.Textarea):
+                    field.widget.attrs.update({'class': 'form-control'})
+                elif isinstance(field.widget, forms.FileInput):
+                    field.widget.attrs.update({'class': 'form-control'})
+                else:
+                    field.widget.attrs.update({'class': 'form-control'})
+
+
+@admin_required
+def company_profile_view(request):
+    """Edit company profile — admin and superadmin only."""
+    profile = CompanyProfile.get_or_create_default()
+
+    if request.method == 'POST':
+        form = CompanyProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Company profile updated successfully.'))
+            return redirect('accounts:company_profile')
+    else:
+        form = CompanyProfileForm(instance=profile)
+
+    return render(request, 'accounts/company_profile_form.html', {
+        'form': form,
+        'profile': profile,
+        'title': _('Company Profile'),
+    })

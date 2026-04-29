@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ meter.name }} {% trans "Ledger" %} - Bibaj Menaxhment{% endblock %}
+{% block title %}{{ meter.name }} {% trans "Ledger" %} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -14,25 +14,25 @@
     </div>
 </div>
 
-<div class="card mb-24" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+<div class="card mb-24 summary-grid">
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Type" %}</span>
+        <span class="summary-label">{% trans "Type" %}</span>
         <span class="badge badge--{{ meter.meter_type }}">{{ meter.get_meter_type_display }}</span>
     </div>
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Reading Metric" %}</span>
-        <span style="font-size:14px;">{{ meter.reading_metric }}</span>
+        <span class="summary-label">{% trans "Reading Metric" %}</span>
+        <span class="text-body">{{ meter.reading_metric }}</span>
     </div>
     {% if meter.serial_number %}
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Serial" %}</span>
-        <span style="font-size:14px;">{{ meter.serial_number }}</span>
+        <span class="summary-label">{% trans "Serial" %}</span>
+        <span class="text-body">{{ meter.serial_number }}</span>
     </div>
     {% endif %}
 </div>
 
 {% if page_obj %}
-<div class="card" style="padding:0; overflow:hidden;">
+<div class="card card--flush">
     <table class="table meter-ledger-table">
         <thead>
             <tr>
@@ -64,13 +64,13 @@
                     <div class="meter-ledger-table__actions">
                         <a href="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
                         {% if ledger.has_debt %}
-                        <form action="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/settle/" method="post" onsubmit="return confirm('{% trans "Reset this tenant expense to zero after verifying payment?" %}')" style="display:inline;">
+                        <form action="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/settle/" method="post" onsubmit="return confirm('{% trans "Reset this tenant expense to zero after verifying payment?" %}')" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn--secondary btn--small">{% trans "Reset to Zero" %}</button>
                         </form>
                         {% endif %}
                         {% if user.is_super_user %}
-                        <form action="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/delete/" method="post" onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                        <form action="/locations/{{ meter.unit.location.uuid }}/units/{{ meter.unit.uuid }}/meters/{{ meter.uuid }}/ledger/{{ ledger.uuid }}/delete/" method="post" onsubmit="return confirm('{% trans "Are you sure?" %}')" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
                         </form>
@@ -81,7 +81,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="{% if user.is_admin %}5{% else %}4{% endif %}" class="text-center" style="padding:32px; color:var(--text-secondary);">
+                <td colspan="{% if user.is_admin %}5{% else %}4{% endif %}" class="table-empty">
                     {% trans "No ledger entries yet." %}
                 </td>
             </tr>
@@ -110,7 +110,7 @@
     {% endif %}
 </div>
 {% else %}
-<div class="card text-center" style="padding:48px 16px; color:var(--text-secondary);">
+<div class="card empty-state">
     {% trans "No ledger entries. Click '+ Add Entry' to create one." %}
 </div>
 {% endif %}

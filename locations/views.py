@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 from .models import Location, Unit, Meter, MeterLedger, ParkingPlace, Lease, LeaseLedger, LeaseStatus
-from .forms import LocationForm, UnitForm, MeterForm, MeterLedgerForm, ParkingPlaceForm, LeaseForm, LeaseLedgerForm
+from .forms import LocationForm, UnitForm, MeterForm, MeterLedgerForm, ParkingPlaceForm, ParkingBulkCreateForm, LeaseForm, LeaseLedgerForm
 
 LEASES_PER_PAGE = 15
 
@@ -66,6 +66,13 @@ def dashboard(request):
     unpaid_leases.sort(key=lambda l: l.total_debt, reverse=True)
     unpaid_leases_count = len(unpaid_leases)
     unpaid_total_sum = sum(lease.total_debt for lease in unpaid_leases)
+
+    # Calculate periods due for each unpaid lease
+    for lease in unpaid_leases:
+        if lease.monthly_payment and lease.monthly_payment > 0:
+            lease.periods_due = int(lease.total_debt / lease.monthly_payment)
+        else:
+            lease.periods_due = 0
 
     # KPI 2: Units with Meter Debts (units with billed_amount > 0 and no payment recorded)
     # MeterLedger has no payment field, so "unpaid" = billed_amount > 0 exists
@@ -282,6 +289,7 @@ def unit_detail(request, location_uuid, unit_uuid):
     unit = get_object_or_404(Unit, uuid=unit_uuid, location__uuid=location_uuid)
     meters = unit.meters.all().order_by('name')
     parking = unit.parking_assignments.all().order_by('label')
+    available_parking = ParkingPlace.objects.filter(location=unit.location, unit__isnull=True).order_by('label')
     lease_ledgers = []
     if unit.lease:
         lease_ledgers = list(unit.lease.payment_ledgers.all().order_by('year', 'month'))
@@ -297,8 +305,39 @@ def unit_detail(request, location_uuid, unit_uuid):
         'unit': unit,
         'meters': meters,
         'parking': parking,
+        'available_parking': available_parking,
         'lease_ledgers': lease_ledgers,
     })
+
+
+@login_required
+@require_POST
+def unit_assign_parking(request, location_uuid, unit_uuid):
+    """Assign an available parking place to this unit."""
+    unit = get_object_or_404(Unit, uuid=unit_uuid, location__uuid=location_uuid)
+    parking_uuid = request.POST.get('parking_uuid')
+    
+    if parking_uuid:
+        parking = get_object_or_404(ParkingPlace, uuid=parking_uuid, location__uuid=location_uuid, unit__isnull=True)
+        parking.unit = unit
+        parking.save(update_fields=['unit', 'updated_at'])
+        messages.success(request, _('Parking "{label}" assigned to this unit.').format(label=parking.label))
+    
+    return redirect('/locations/' + str(location_uuid) + '/units/' + str(unit_uuid) + '/')
+
+
+@login_required
+@require_POST
+def unit_unassign_parking(request, location_uuid, unit_uuid, parking_uuid):
+    """Unassign a parking place from this unit."""
+    unit = get_object_or_404(Unit, uuid=unit_uuid, location__uuid=location_uuid)
+    parking = get_object_or_404(ParkingPlace, uuid=parking_uuid, unit=unit)
+    
+    parking.unit = None
+    parking.save(update_fields=['unit', 'updated_at'])
+    messages.success(request, _('Parking "{label}" unassigned from this unit.').format(label=parking.label))
+    
+    return redirect('/locations/' + str(location_uuid) + '/units/' + str(unit_uuid) + '/')
 
 
 # ===========================
@@ -425,6 +464,7 @@ def parking_create(request, location_uuid):
     location = get_object_or_404(Location, uuid=location_uuid)
     if request.method == 'POST':
         form = ParkingPlaceForm(request.POST)
+        form._location = location
         if form.is_valid():
             parking = form.save(commit=False)
             parking.location = location
@@ -432,11 +472,93 @@ def parking_create(request, location_uuid):
             messages.success(request, _('Parking place "{label}" created.').format(label=parking.label))
             return redirect('/locations/' + str(location_uuid) + '/')
     else:
-        form = ParkingPlaceForm()
-        form.fields['unit'].queryset = location.units.all()
+        form = ParkingPlaceForm(initial={'location': location})
     return render(request, 'locations/parking_form.html', {
         'form': form, 'title': _('Add Parking Place'), 'location': location,
     })
+
+
+@login_required
+def parking_bulk_create(request, location_uuid):
+    """Bulk create multiple parking places."""
+    location = get_object_or_404(Location, uuid=location_uuid)
+    
+    if request.method == 'POST':
+        form = ParkingBulkCreateForm(request.POST)
+        if form.is_valid():
+            labels = form.cleaned_data['labels']
+            covered = form.cleaned_data['covered']
+            
+            created_count = 0
+            skipped_count = 0
+            
+            for label in labels:
+                if ParkingPlace.objects.filter(location=location, label=label).exists():
+                    skipped_count += 1
+                    messages.warning(request, _('Parking place "{label}" already exists, skipped.').format(label=label))
+                    continue
+                
+                ParkingPlace.objects.create(
+                    location=location,
+                    label=label,
+                    covered=covered,
+                )
+                created_count += 1
+            
+            messages.success(
+                request, 
+                _('Successfully created {count} parking place(s).').format(count=created_count) +
+                (f' {skipped_count} skipped (duplicates).' if skipped_count else '')
+            )
+            return redirect('/locations/' + str(location_uuid) + '/')
+    else:
+        form = ParkingBulkCreateForm(location=location)
+    
+    return render(request, 'locations/parking_bulk_form.html', {
+        'form': form,
+        'title': _('Add Parking Places'),
+        'location': location,
+    })
+
+
+@login_required
+def parking_list(request, location_uuid=None):
+    """List all parking places, optionally filtered by location."""
+    location_filter = request.GET.get('location')
+
+    if location_uuid:
+        location = get_object_or_404(Location, uuid=location_uuid)
+        parking_qs = ParkingPlace.objects.filter(location=location).select_related('unit', 'location').order_by('label')
+    elif location_filter:
+        location = get_object_or_404(Location, uuid=location_filter)
+        parking_qs = ParkingPlace.objects.filter(location=location).select_related('unit', 'location').order_by('label')
+    else:
+        location = None
+        parking_qs = ParkingPlace.objects.all().select_related('unit', 'location').order_by('location__name', 'label')
+
+    status_filter = request.GET.get('status', 'all')
+
+    if status_filter == 'assigned':
+        parking_qs = parking_qs.filter(unit__isnull=False)
+    elif status_filter == 'unassigned':
+        parking_qs = parking_qs.filter(unit__isnull=True)
+
+    total = parking_qs.count()
+    assigned_count = parking_qs.filter(unit__isnull=False).count()
+    unassigned_count = parking_qs.filter(unit__isnull=True).count()
+
+    locations = Location.objects.all().order_by('name')
+
+    context = {
+        'location': location,
+        'locations': locations,
+        'parking_places': parking_qs,
+        'status_filter': status_filter,
+        'total': total,
+        'assigned_count': assigned_count,
+        'unassigned_count': unassigned_count,
+    }
+    return render(request, 'locations/parking_list.html', context)
 
 
 @login_required
@@ -450,7 +572,6 @@ def parking_update(request, location_uuid, parking_uuid):
             return redirect('/locations/' + str(location_uuid) + '/')
     else:
         form = ParkingPlaceForm(instance=parking)
-        form.fields['unit'].queryset = parking.location.units.all()
     return render(request, 'locations/parking_form.html', {
         'form': form, 'title': _('Edit Parking Place'), 'location': parking.location,
     })
@@ -471,11 +592,26 @@ def parking_delete(request, location_uuid, parking_uuid):
 # ===========================
 @login_required
 def lease_list(request):
-    leases = Lease.objects.all().order_by('-created_at')
+    from django.db.models import Q
+
+    leases = Lease.objects.all()
+    search_query = request.GET.get('q', '').strip()
+
+    if search_query:
+        leases = leases.filter(
+            Q(display_id__icontains=search_query)
+            | Q(name__icontains=search_query)
+            | Q(phone__icontains=search_query)
+        )
+
+    leases = leases.order_by('-created_at')
     paginator = Paginator(leases, LEASES_PER_PAGE)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    return render(request, 'locations/lease_list.html', {'page_obj': page_obj})
+    return render(request, 'locations/lease_list.html', {
+        'page_obj': page_obj,
+        'search_query': search_query,
+    })
 
 
 @login_required
@@ -568,6 +704,8 @@ def lease_ledger_list(request, lease_uuid):
 @login_required
 def lease_ledger_print(request, lease_uuid):
     """Print-friendly lease ledger view."""
+    from accounts.models import CompanyProfile
+
     lease = get_object_or_404(Lease, uuid=lease_uuid)
     ledgers = list(lease.payment_ledgers.all().order_by('year', 'month'))
     units = lease.assigned_units.select_related('location').prefetch_related('meters__ledgers')
@@ -581,7 +719,13 @@ def lease_ledger_print(request, lease_uuid):
         total_paid += entry.amount_paid or 0
         balance += (entry.amount_due or 0) - (entry.amount_paid or 0)
         entry.running_balance = balance
-        entry.effectively_paid = entry.balance_before < 0
+        entry.effectively_paid = balance <= 0
+
+    # Remaining balance: positive = tenant owes, negative = tenant has credit
+    remaining_balance = total_due - total_paid if ledgers else 0
+
+    # Company profile for print header
+    company = CompanyProfile.get_or_create_default()
 
     meter_rows = []
     meter_total_outstanding = 0
@@ -616,12 +760,14 @@ def lease_ledger_print(request, lease_uuid):
         'ledgers': ledgers,
         'total_due': total_due,
         'total_paid': total_paid,
-        'running_balance': total_due - total_paid if ledgers else 0,
+        'remaining_balance': remaining_balance,
+        'running_balance': remaining_balance,
         'meter_rows': meter_rows,
         'meter_count': meter_count,
         'meter_open_count': meter_open_count,
         'meter_settled_count': meter_settled_count,
         'meter_total_outstanding': meter_total_outstanding,
+        'company': company,
         'now': __import__('datetime').date.today(),
     })
 

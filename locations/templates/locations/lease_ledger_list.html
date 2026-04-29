@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n %}{% load ledger_extras %}
 
-{% block title %}{{ lease.display_id }} — {% trans "Payment Ledger" %} - Bibaj Menaxhment{% endblock %}
+{% block title %}{{ lease.display_id }} — {% trans "Payment Ledger" %} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -15,33 +15,39 @@
 </div>
 
 <!-- Lease Summary -->
-<div class="card mb-24" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+<div class="card mb-24 summary-grid">
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Tenant" %}</span>
-        <span style="font-size:14px; font-weight:600;">{{ lease.name }}</span>
+        <span class="summary-label">{% trans "Tenant" %}</span>
+        <span class="summary-value">{{ lease.name }}</span>
     </div>
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Monthly" %}</span>
-        <span style="font-size:14px; font-weight:600;">€{{ lease.monthly_payment }}</span>
+        <span class="summary-label">{% trans "Monthly" %}</span>
+        <span class="summary-value">€{{ lease.monthly_payment }}</span>
     </div>
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Total Due" %}</span>
-        <span style="font-size:14px; font-weight:600;">€{{ total_due|floatformat:2 }}</span>
+        <span class="summary-label">{% trans "Total Due" %}</span>
+        <span class="summary-value">€{{ total_due|floatformat:2 }}</span>
     </div>
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Total Paid" %}</span>
-        <span style="font-size:14px; font-weight:600;">€{{ total_paid|floatformat:2 }}</span>
+        <span class="summary-label">{% trans "Total Paid" %}</span>
+        <span class="summary-value">€{{ total_paid|floatformat:2 }}</span>
     </div>
     <div>
-        <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Remaining Balance" %}</span>
-        <span style="font-size:14px; font-weight:700; color:{% if running_balance > 0 %}var(--error){% elif running_balance < 0 %}var(--success){% else %}var(--text-secondary){% endif %};">
-            €{{ running_balance|floatformat:2 }}
+        <span class="summary-label">{% trans "Remaining Balance" %}</span>
+        <span class="summary-value {% if running_balance > 0 %}text-error{% elif running_balance < 0 %}text-success{% else %}text-neutral{% endif %}">
+            {% if running_balance > 0 %}
+                -€{{ running_balance|floatformat:2 }}
+            {% elif running_balance < 0 %}
+                +€{{ running_balance|abs_value|floatformat:2 }}
+            {% else %}
+                €0.00
+            {% endif %}
         </span>
     </div>
 </div>
 
 <!-- Print Button -->
-<div class="flex gap-8 mb-24" style="margin-top:16px;">
+<div class="flex gap-8 mt-16 mb-24">
     <a href="/leases/{{ lease.uuid }}/ledger/print/" target="_blank" class="btn btn--secondary">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M11 5V1H3v4M3 10v3h8v-3M1 10h12v3H1z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -52,7 +58,7 @@
 
 <!-- Ledger Table -->
 {% if page_obj %}
-<div class="card" style="padding:0; overflow:hidden;">
+<div class="card card--flush">
     <table class="table">
         <thead>
             <tr>
@@ -77,8 +83,14 @@
                     {% if entry.amount_paid > 0 %}€{{ entry.amount_paid }}{% else %}—{% endif %}
                 </td>
                 <td data-label="{% trans "Balance" %}">
-                    <strong style="color:{% if entry.running_balance > 0 %}var(--error){% elif entry.running_balance < 0 %}var(--success){% else %}var(--text-secondary){% endif %};">
-                        €{{ entry.running_balance|floatformat:2 }}
+                    <strong class="{% if entry.running_balance > 0 %}text-error{% elif entry.running_balance < 0 %}text-success{% else %}text-neutral{% endif %}">
+                        {% if entry.running_balance > 0 %}
+                            -€{{ entry.running_balance|floatformat:2 }}
+                        {% elif entry.running_balance < 0 %}
+                            +€{{ entry.running_balance|abs_value|floatformat:2 }}
+                        {% else %}
+                            €0.00
+                        {% endif %}
                     </strong>
                 </td>
                 <td data-label="{% trans "Status" %}">
@@ -110,7 +122,7 @@
                         <a href="/leases/{{ lease.uuid }}/ledger/{{ entry.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
                         {% if user.is_super_user %}
                         <form action="/leases/{{ lease.uuid }}/ledger/{{ entry.uuid }}/delete/" method="post"
-                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
                         </form>
@@ -121,7 +133,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="{% if user.is_admin %}8{% else %}7{% endif %}" class="text-center" style="padding:32px; color:var(--text-secondary);">
+                <td colspan="{% if user.is_admin %}8{% else %}7{% endif %}" class="table-empty">
                     {% trans "No ledger entries yet." %}
                 </td>
             </tr>
@@ -150,7 +162,7 @@
     {% endif %}
 </div>
 {% else %}
-<div class="card text-center" style="padding:48px 16px; color:var(--text-secondary);">
+<div class="card empty-state">
     {% trans "No payment entries yet. Click '+ Add Entry' to record a payment." %}
 </div>
 {% endif %}

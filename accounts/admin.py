@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import User, Role
+from .models import User, Role, CompanyProfile, UserApiKey
 
 
 @admin.register(User)
@@ -23,3 +23,18 @@ class UserAdmin(BaseUserAdmin):
     )
     search_fields = ('username', 'email', 'first_name', 'last_name')
     ordering = ('username',)
+
+
+@admin.register(CompanyProfile)
+class CompanyProfileAdmin(admin.ModelAdmin):
+    model = CompanyProfile
+    list_display = ('company_name', 'tax_number', 'email', 'phone', 'city')
+
+
+@admin.register(UserApiKey)
+class UserApiKeyAdmin(admin.ModelAdmin):
+    model = UserApiKey
+    list_display = ('name', 'user', 'scope', 'key_prefix', 'is_active', 'last_used_at', 'created_at')
+    list_filter = ('scope', 'is_active', 'created_at')
+    search_fields = ('name', 'user__username', 'key_prefix')
+    readonly_fields = ('uuid', 'key_prefix', 'key_hash', 'last_used_at', 'created_at', 'updated_at')

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Users" %} - Bibaj Menaxhment{% endblock %}
+{% block title %}{% trans "Users" %} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -11,11 +11,12 @@
     {% endif %}
 </div>
 
-<div class="card" style="padding: 0; overflow: hidden;">
+<div class="card card--flush">
     <table class="table">
         <thead>
             <tr>
                 <th>{% trans "Username" %}</th>
+                <th>{% trans "UUID" %}</th>
                 <th>{% trans "Email" %}</th>
                 <th>{% trans "Role" %}</th>
                 <th>{% trans "Active" %}</th>
@@ -26,24 +27,31 @@
         </thead>
         <tbody>
             {% for u in users %}
-            <tr class="{% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}clickable{% endif %}" {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}onclick="window.location.href='/users/{{ u.pk }}/edit/'"{% endif %}>
+            <tr class="{% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}clickable{% endif %}" {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}onclick="window.location.href='/users/{{ u.uuid }}/edit/'"{% endif %}>
                 <td data-label="{% trans "Username" %}">
-                    {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}<a href="/users/{{ u.pk }}/edit/">{{ u.username }}</a>{% else %}{{ u.username }}{% endif %}
+                    {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}<a href="/users/{{ u.uuid }}/edit/">{{ u.username }}</a>{% else %}{{ u.username }}{% endif %}
                 </td>
+                <td data-label="{% trans "UUID" %}"><code class="text-xs text-muted">{{ u.uuid|truncatechars:12 }}</code></td>
                 <td data-label="{% trans "Email" %}">{{ u.email|default:"—" }}</td>
                 <td data-label="{% trans "Role" %}">
                     <span class="badge badge--{{ u.role }}">{{ u.get_role_display }}</span>
                 </td>
-                <td data-label="{% trans "Active" %}">{% if u.is_active %}✅{% else %}❌{% endif %}</td>
+                <td data-label="{% trans "Active" %}">
+                    {% if u.is_active %}
+                    <span class="badge badge--active">{% trans "Active" %}</span>
+                    {% else %}
+                    <span class="badge badge--inactive">{% trans "Inactive" %}</span>
+                    {% endif %}
+                </td>
                 {% if user.is_admin or user.role == 'data_entry_clerk' %}
                 <td onclick="event.stopPropagation()">
                     <div class="flex gap-8">
                         {% if user.is_super_user or user.role == 'admin' and u.role == 'data_entry_clerk' or user.pk == u.pk and user.role == 'data_entry_clerk' %}
-                        <a href="/users/{{ u.pk }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        <a href="/users/{{ u.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
                         {% endif %}
                         {% if u.pk != user.pk and user.is_super_user %}
-                        <form action="/users/{{ u.pk }}/delete/" method="post"
-                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                        <form action="/users/{{ u.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
                         </form>
@@ -54,7 +62,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="{% if user.is_admin or user.role == 'data_entry_clerk' %}5{% else %}4{% endif %}" class="text-center" style="padding: 32px; color: var(--text-secondary);">
+                <td colspan="{% if user.is_admin or user.role == 'data_entry_clerk' %}6{% else %}5{% endif %}" class="table-empty">
                     {% trans "No users found." %}
                 </td>
             </tr>

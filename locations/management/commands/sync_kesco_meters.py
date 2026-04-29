@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import random
 import base64
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -11,7 +12,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from locations.models import Location, Meter, MeterLedger, MeterType, ReadingMetric, Unit, UnitType
+from locations.models import Location, Meter, MeterLedger, MeterType, ReadingMetric, Unit, UnitType, KescoCredential
 
 
 UNASSIGNED_LOCATION_NAME = 'Location 0 - Unassigned KESCO Meters'
@@ -40,22 +41,101 @@ class Command(BaseCommand):
     def sync(self, options):
         created = 0
         updated = 0
-        accounts = self.load_accounts(options)
+        
+        # Try to use database credentials first
+        accounts = self.load_accounts_from_db()
+        
+        # Fallback to env/file-based accounts if none in DB
+        if not accounts:
+            accounts = self.load_accounts(options)
+        
         for account in accounts:
-            token = account.get('token') or self.login(account)
-            user_id = account.get('user_id') or self.user_id_from_token(token)
+            credential = account.get('credential')
+            token = account.get('token')
+            user_id = account.get('user_id')
+            
+            # If we have a credential object, try to get a valid token
+            if credential:
+                try:
+                    token, needs_captcha = credential.get_valid_token()
+                    if needs_captcha:
+                        self.stderr.write(
+                            self.style.WARNING(
+                                f'KESCO account {credential.username} requires captcha login. '
+                                f'Please use the iframe login page.'
+                            )
+                        )
+                        credential.last_sync_status = 'Requires captcha login'
+                        credential.save(update_fields=['last_sync_status', 'updated_at'])
+                        continue
+                    
+                    user_id = user_id or credential.user_id
+                except Exception as e:
+                    self.stderr.write(self.style.ERROR(f'KESCO account {credential.username}: {str(e)}'))
+                    if credential:
+                        credential.last_sync_status = str(e)[:50]
+                        credential.save(update_fields=['last_sync_status', 'updated_at'])
+                    continue
+            
+            if not token:
+                self.stderr.write(self.style.WARNING(f'Skipping account {account.get("username", "<unknown>")}: no token'))
+                continue
+            
+            if not user_id:
+                user_id = self.user_id_from_token(token)
+            
             if not user_id:
                 raise CommandError(f'KESCO account {account.get("username", "<unknown>")} has no user_id and none could be read from the token.')
 
-            payload = self.fetch_user_data(user_id, token)
-            for balance, source_timestamp in self.extract_balances(payload):
-                was_created = self.upsert_balance(balance, source_timestamp)
-                if was_created:
-                    created += 1
-                else:
-                    updated += 1
+            try:
+                # Sleep before querying user debitors
+                delay = random.uniform(3, 10)
+                self.stdout.write(f'  Sleeping {delay:.1f}s before querying KESCO...')
+                time.sleep(delay)
+                payload = self.fetch_user_data(user_id, token)
+                balances = list(self.extract_balances(payload))
+                for i, (balance, source_timestamp) in enumerate(balances):
+                    # Sleep between each meter/debitor operation
+                    if i > 0:
+                        delay = random.uniform(3, 10)
+                        self.stdout.write(f'  Sleeping {delay:.1f}s before processing next debitor...')
+                        time.sleep(delay)
+                    was_created = self.upsert_balance(balance, source_timestamp)
+                    if was_created:
+                        created += 1
+                    else:
+                        updated += 1
+                
+                # Update last sync time for credential
+                if credential:
+                    credential.last_sync_at = timezone.now()
+                    credential.last_sync_status = 'Sync completed'
+                    credential.save(update_fields=['last_sync_at', 'last_sync_status', 'updated_at'])
+            except Exception as e:
+                self.stderr.write(self.style.ERROR(f'KESCO sync failed for {account.get("username", "<unknown>")}: {str(e)}'))
+                if credential:
+                    credential.last_sync_at = timezone.now()
+                    credential.last_sync_status = f'Error: {str(e)[:30]}'
+                    credential.save(update_fields=['last_sync_at', 'last_sync_status', 'updated_at'])
 
         self.stdout.write(self.style.SUCCESS(f'KESCO sync completed. meters_created={created} ledgers_updated={updated}'))
+
+    def load_accounts_from_db(self):
+        """Load active KESCO credentials from database."""
+        accounts = []
+        try:
+            credentials = KescoCredential.objects.filter(is_active=True)
+            for cred in credentials:
+                accounts.append({
+                    'credential': cred,
+                    'token': cred.bearer_token if cred.is_token_valid else None,
+                    'user_id': cred.user_id,
+                    'username': cred.username,
+                })
+        except Exception as e:
+            # DB might not have KescoCredential table yet (before migration)
+            self.stdout.write(self.style.WARNING(f'Could not load KESCO credentials from DB: {e}'))
+        return accounts
 
     def load_accounts(self, options):
         accounts = []
@@ -148,8 +228,7 @@ class Command(BaseCommand):
         return payload.get('id') or payload.get('sub') or payload.get('nameid')
 
     def fetch_user_data(self, user_id, token):
-        url_template = os.environ.get('KESCO_USER_DATA_URL_TEMPLATE', DEFAULT_URL_TEMPLATE)
-        url = url_template.format(user_id=user_id)
+        url = os.environ.get('KESCO_USER_DATA_URL_TEMPLATE', 'https://fatura.kesco-energy.com/api/Account/user-debitors')
         request = Request(
             url,
             headers={
@@ -168,13 +247,12 @@ class Command(BaseCommand):
 
     def extract_balances(self, payload):
         data = payload.get('Data') or {}
-        source_timestamp = self.parse_source_timestamp(data.get('lastUpdate'))
-        balances = data.get('balances') or data.get('meters') or data.get('balance') or []
-        if isinstance(balances, dict):
-            balances = [balances]
-        for balance in balances:
-            if isinstance(balance, dict):
-                yield balance, source_timestamp
+        debitors = data.get('debitors', [])
+        if isinstance(debitors, dict):
+            debitors = [debitors]
+        for debitor in debitors:
+            if isinstance(debitor, dict):
+                yield debitor, timezone.now()
 
     def parse_source_timestamp(self, value):
         if not value:
@@ -190,37 +268,123 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def upsert_balance(self, balance, source_timestamp):
-        serial_number = str(balance.get('AMeterId') or '').strip()
-        if not serial_number:
-            self.stderr.write('Skipping KESCO balance without AMeterId.')
+        debitor_id = str(balance.get('ElDebitorId') or '').strip()
+        agency_id = str(balance.get('AgencyId') or '').strip()
+        if not debitor_id:
+            self.stderr.write('Skipping KESCO balance without ElDebitorId.')
             return False
 
-        holding_unit = self.get_holding_unit()
-        meter = Meter.objects.filter(serial_number=serial_number).first()
+        # Build meter name: AgencyId + ElDebitorId (e.g. DFE160)
+        meter_name = f'{agency_id}{debitor_id}'
+
+        holding_unit = None
+        orphan = None
         created = False
+
+        # Priority 1: Find meter explicitly linked by kesco_debitor_id
+        meter = Meter.objects.filter(kesco_debitor_id=debitor_id).first()
+
+        # Priority 2: Fallback — find orphan created by earlier sync
         if meter is None:
+            orphan = Meter.objects.filter(serial_number=f"KESCO-{debitor_id}").first()
+
+        if meter is None and orphan is None:
+            # Create new meter under holding location
+            holding_unit = self.get_holding_unit()
             created = True
             meter = Meter.objects.create(
                 unit=holding_unit,
-                name=self.build_meter_name(balance),
+                name=meter_name,
                 meter_type=MeterType.ELECTRIC,
                 reading_metric=ReadingMetric.KWH,
-                serial_number=serial_number,
+                kesco_debitor_id=debitor_id,
+                kesco_agency_id=agency_id,
+                kesco_full_name=balance.get('FullName') or None,
+                kesco_address=balance.get('DebitorAddress') or None,
+                kesco_tariff_group=balance.get('TariffGroup') or None,
             )
-        else:
-            changed = False
-            new_name = self.build_meter_name(balance)
-            if meter.name != new_name:
-                meter.name = new_name
-                changed = True
-            if changed:
-                meter.save(update_fields=['name', 'updated_at'])
 
-        amount = self.decimal_or_zero(balance.get('CurrentBalance'))
+        # Merge orphan into linked meter if both exist
+        if meter is not None and orphan is not None and orphan.pk != meter.pk:
+            from locations.models import MeterLedger as ML
+            for old_ledger in ML.objects.filter(meter=orphan):
+                ML.objects.update_or_create(
+                    meter=meter,
+                    month=old_ledger.month,
+                    year=old_ledger.year,
+                    defaults={
+                        'reading': old_ledger.reading,
+                        'billed_amount': old_ledger.billed_amount,
+                        'settled_at': old_ledger.settled_at,
+                    },
+                )
+            orphan.delete()
+            self.stdout.write(self.style.SUCCESS(
+                f'  Merged orphan "{orphan.name}" into "{meter.name}".'
+            ))
+
+        # If only orphan exists, promote it
+        if meter is None and orphan is not None:
+            meter = orphan
+            created = False
+
+        # Update KESCO fields on meter
+        changed = False
+        if meter.name != meter_name:
+            meter.name = meter_name
+            changed = True
+        if meter.kesco_debitor_id != debitor_id:
+            meter.kesco_debitor_id = debitor_id
+            changed = True
+        if meter.kesco_agency_id != agency_id:
+            meter.kesco_agency_id = agency_id
+            changed = True
+        full_name = balance.get('FullName') or None
+        if meter.kesco_full_name != full_name:
+            meter.kesco_full_name = full_name
+            changed = True
+        address = balance.get('DebitorAddress') or None
+        if meter.kesco_address != address:
+            meter.kesco_address = address
+            changed = True
+        tariff = balance.get('TariffGroup') or None
+        if meter.kesco_tariff_group != tariff:
+            meter.kesco_tariff_group = tariff
+            changed = True
+
+        # Parse LastDueDate
+        last_due_date = None
+        last_due_raw = balance.get('LastDueDate')
+        if last_due_raw:
+            try:
+                last_due_date = datetime.fromisoformat(
+                    last_due_raw.replace('Z', '+00:00')
+                ).date()
+            except (ValueError, AttributeError):
+                pass
+        if meter.kesco_last_due_date != last_due_date:
+            meter.kesco_last_due_date = last_due_date
+            changed = True
+
+        if changed:
+            meter.save(update_fields=[
+                'name', 'kesco_debitor_id', 'kesco_agency_id',
+                'kesco_full_name', 'kesco_address', 'kesco_tariff_group',
+                'kesco_last_due_date', 'updated_at',
+            ])
+
+        # Extract billing month/year from LastDueDate
+        if last_due_date:
+            month, year = last_due_date.month, last_due_date.year
+        else:
+            month, year = source_timestamp.month, source_timestamp.year
+
+        amount = self.decimal_or_zero(balance.get('TotalDebt'))
+
         ledger, _ = MeterLedger.objects.update_or_create(
             meter=meter,
-            month=source_timestamp.month,
-            year=source_timestamp.year,
+            month=month,
+            year=year,
             defaults={
                 'reading': None,
                 'billed_amount': amount,
@@ -249,14 +413,18 @@ class Command(BaseCommand):
 
     def build_meter_name(self, balance):
         agency = str(balance.get('AgencyId') or 'KESCO').strip()
-        debitor_id = str(balance.get('DebitorId') or '').strip()
-        serial = str(balance.get('AMeterId') or '').strip()
-        consumer = str(balance.get('ConsumerName') or '').strip()
-        provider_id = f'{agency}{debitor_id}' if debitor_id else agency
-        parts = [provider_id, serial]
-        if consumer:
-            parts.append(consumer)
-        return ' - '.join(parts)
+        debitor_id = str(balance.get('ElDebitorId') or '').strip()
+        full_name = str(balance.get('FullName') or '').strip()
+        address = str(balance.get('DebitorAddress') or '').strip()
+        tariff = str(balance.get('TariffGroup') or '').strip()
+        parts = [f'{agency}-{debitor_id}']
+        if full_name:
+            parts.append(full_name)
+        if address:
+            parts.append(address)
+        if tariff:
+            parts.append(f'Tariff: {tariff}')
+        return ' | '.join(parts)
 
     def decimal_or_zero(self, value):
         try:

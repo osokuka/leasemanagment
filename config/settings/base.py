@@ -96,7 +96,10 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en'
 LANGUAGES = [
     ('en', 'English'),
-    ('sq', 'Albanian'),
+    ('sq', 'Shqip'),
+    ('de', 'Deutsch'),
+    ('fr', 'Français'),
+    ('it', 'Italiano'),
 ]
 LOCALE_PATHS = [BASE_DIR / 'locale']
 USE_I18N = True
@@ -125,6 +128,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/users/'
 LOGOUT_REDIRECT_URL = '/login/'
+
+# Allow iframes for KESCO portal
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Roles
 USER_ROLES = [

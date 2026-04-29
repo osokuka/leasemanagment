@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} - {% trans "Lease Management" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+    <a href="/dashboard/" class="btn btn--secondary">{% trans "Back to Dashboard" %}</a>
+</div>
+
+<div class="form-shell form-shell--wide">
+    <div class="form-shell__intro">
+        <span class="form-shell__eyebrow">{% trans "Setup" %}</span>
+        <h2>{{ title }}</h2>
+        <p>{% trans "Manage your company information displayed on reports, invoices, and system headers." %}</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.company_name.id_for_label }}">{{ form.company_name.label }}</label>
+            {{ form.company_name }}
+            {% if form.company_name.errors %}
+            <div class="form-error">{{ form.company_name.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.tax_number.id_for_label }}">{{ form.tax_number.label }}</label>
+            {{ form.tax_number }}
+            {% if form.tax_number.errors %}
+            <div class="form-error">{{ form.tax_number.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.registration_number.id_for_label }}">{{ form.registration_number.label }}</label>
+            {{ form.registration_number }}
+            {% if form.registration_number.errors %}
+            <div class="form-error">{{ form.registration_number.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.fiscal_code.id_for_label }}">{{ form.fiscal_code.label }}</label>
+            {{ form.fiscal_code }}
+            {% if form.fiscal_code.errors %}
+            <div class="form-error">{{ form.fiscal_code.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.nipt.id_for_label }}">{{ form.nipt.label }}</label>
+            {{ form.nipt }}
+            {% if form.nipt.errors %}
+            <div class="form-error">{{ form.nipt.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <div class="form-error">{{ form.email.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+            {{ form.phone }}
+            {% if form.phone.errors %}
+            <div class="form-error">{{ form.phone.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>
+            {{ form.website }}
+            {% if form.website.errors %}
+            <div class="form-error">{{ form.website.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+            {{ form.city }}
+            {% if form.city.errors %}
+            <div class="form-error">{{ form.city.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.address.id_for_label }}">{{ form.address.label }}</label>
+            {{ form.address }}
+            {% if form.address.errors %}
+            <div class="form-error">{{ form.address.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.logo.id_for_label }}">{{ form.logo.label }}</label>
+            {{ form.logo }}
+            {% if form.logo.errors %}
+            <div class="form-error">{{ form.logo.errors|join:", " }}</div>
+            {% endif %}
+            {% if profile.logo %}
+            <div class="mt-8">
+                <img src="{{ profile.logo.url }}" alt="{{ profile.company_name }}" class="logo-preview-img">
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn--primary">{% trans "Save" %}</button>
+            <a href="/dashboard/" class="btn btn--secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

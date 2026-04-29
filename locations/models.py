@@ -1,9 +1,13 @@
 import uuid
 import os
-from datetime import date
-from decimal import Decimal
+import json
+from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 
 def contract_upload_path(instance, filename):
@@ -394,6 +398,42 @@ class Meter(models.Model):
         null=True,
         verbose_name=_('Serial Number'),
     )
+    kesco_debitor_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name=_('KESCO Debitor ID'),
+        help_text=_('Link to KESCO ElDebitorId for automatic sync'),
+    )
+    kesco_agency_id = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name=_('KESCO Agency ID'),
+    )
+    kesco_full_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_('KESCO Consumer Name'),
+    )
+    kesco_address = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        verbose_name=_('KESCO Consumer Address'),
+    )
+    kesco_tariff_group = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name=_('KESCO Tariff Group'),
+    )
+    kesco_last_due_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_('KESCO Last Due Date'),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -463,6 +503,185 @@ class MeterLedger(models.Model):
     @property
     def settlement_status(self):
         return _('Open') if self.has_debt else _('Settled')
+
+
+class KescoCredential(models.Model):
+    """KESCO portal credentials and bearer token for an account."""
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+    )
+    username = models.CharField(
+        max_length=255,
+        unique=True,
+        verbose_name=_('KESCO Username / Account ID'),
+    )
+    password = models.CharField(
+        max_length=500,
+        verbose_name=_('KESCO Password'),
+    )
+    user_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_('KESCO User ID'),
+    )
+    bearer_token = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name=_('Bearer Token'),
+    )
+    token_obtained_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name=_('Token Obtained At'),
+    )
+    token_expires_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name=_('Token Expires At'),
+    )
+    last_sync_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name=_('Last Sync At'),
+    )
+    last_sync_status = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name=_('Last Sync Status'),
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_('Active'),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('KESCO Credential')
+        verbose_name_plural = _('KESCO Credentials')
+        ordering = ['username']
+
+    def __str__(self):
+        return f'KESCO: {self.username}'
+
+    @property
+    def is_token_valid(self):
+        if not self.bearer_token or not self.token_expires_at:
+            return False
+        return timezone.now() < self.token_expires_at
+
+    @property
+    def needs_captcha_login(self):
+        """Return True if token is invalid/expired and login is needed."""
+        return not self.is_token_valid
+
+    def login_to_kesco(self):
+        """Attempt to login to KESCO and save the bearer token."""
+        login_url = os.environ.get(
+            'KESCO_LOGIN_URL',
+            'https://fatura.kesco-energy.com/api/Account/login'
+        )
+        username_field = os.environ.get('KESCO_LOGIN_USERNAME_FIELD', 'Username')
+        password_field = os.environ.get('KESCO_LOGIN_PASSWORD_FIELD', 'Password')
+
+        body = json.dumps({
+            username_field: self.username,
+            password_field: self.password,
+            'RememberMe': True,
+        }).encode('utf-8')
+
+        request = Request(
+            login_url,
+            data=body,
+            headers={
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'bldg-mgm-kesco-sync/1.0',
+            },
+            method='POST',
+        )
+
+        try:
+            with urlopen(request, timeout=30) as response:
+                payload = json.loads(response.read().decode('utf-8'))
+        except HTTPError as exc:
+            # If 400/401, might be captcha issue
+            if exc.code in (400, 401, 403):
+                self.last_sync_status = f'Login failed (HTTP {exc.code}) - may require captcha'
+                self.save(update_fields=['last_sync_status', 'updated_at'])
+                raise Exception(f'KESCO login failed for {self.username}: HTTP {exc.code}. This may require captcha verification.')
+            raise Exception(f'KESCO login failed for {self.username}: HTTP {exc.code}')
+        except URLError as exc:
+            raise Exception(f'KESCO login failed for {self.username}: {exc.reason}')
+
+        # Extract token
+        token = self._extract_token(payload)
+        if not token:
+            raise Exception(f'KESCO login response did not contain a bearer token for {self.username}.')
+
+        # Extract user_id from token JWT
+        user_id = self._user_id_from_token(token)
+        if not user_id:
+            user_id = payload.get('userId') or payload.get('Data', {}).get('userId')
+
+        # KESCO tokens expire in 7 days (604800 seconds)
+        now = timezone.now()
+        self.bearer_token = token
+        self.user_id = user_id or self.user_id
+        self.token_obtained_at = now
+        self.token_expires_at = now + timedelta(seconds=604800)
+        self.last_sync_status = 'Token obtained'
+        self.save(update_fields=[
+            'bearer_token', 'user_id', 'token_obtained_at',
+            'token_expires_at', 'last_sync_status', 'updated_at'
+        ])
+        return token
+
+    def _extract_token(self, payload):
+        candidates = [
+            payload.get('token'),
+            payload.get('access_token'),
+            payload.get('accessToken'),
+            payload.get('jwt'),
+        ]
+        data = payload.get('Data') or payload.get('data') or {}
+        if isinstance(data, dict):
+            candidates.extend([
+                data.get('token'),
+                data.get('access_token'),
+                data.get('accessToken'),
+                data.get('jwt'),
+            ])
+        return next((value for value in candidates if value), None)
+
+    def _user_id_from_token(self, token):
+        import base64
+        try:
+            payload_part = token.split('.')[1]
+            padding = '=' * (-len(payload_part) % 4)
+            decoded = base64.urlsafe_b64decode(payload_part + padding)
+            payload = json.loads(decoded.decode('utf-8'))
+            return payload.get('id') or payload.get('sub') or payload.get('nameid')
+        except (IndexError, ValueError, json.JSONDecodeError):
+            return None
+
+    def get_valid_token(self):
+        """Return a valid token, refreshing if needed. Returns (token, needs_captcha)."""
+        if self.is_token_valid:
+            return self.bearer_token, False
+
+        try:
+            token = self.login_to_kesco()
+            return token, False
+        except Exception as e:
+            if 'captcha' in str(e).lower():
+                return None, True
+            raise
 
 
 class ParkingPlace(models.Model):

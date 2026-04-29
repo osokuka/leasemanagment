@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ location.name }} - Bibaj Menaxhment{% endblock %}
+{% block title %}{{ location.name }} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <h1>{{ location.name }}</h1>
-    <div class="flex gap-8">
+    <div class="flex gap-8 flex-wrap">
         {% if user.is_admin %}
         <a href="/locations/{{ location.uuid }}/edit/" class="btn btn--secondary">{% trans "Edit Location" %}</a>
         {% endif %}
@@ -15,40 +15,46 @@
 </div>
 
 <!-- Location Info Card -->
-<div class="card mb-24">
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px;">
+<div class="card mb-16">
+    <div class="grid grid--3col gap-12">
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Address" %}</span>
-            <span style="font-size:14px;">{{ location.address }}</span>
+            <span class="summary-label">{% trans "Address" %}</span>
+            <span>{{ location.address }}</span>
         </div>
         {% if location.focal_point %}
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Focal Point" %}</span>
-            <span style="font-size:14px;">{{ location.focal_point }}</span>
+            <span class="summary-label">{% trans "Focal Point" %}</span>
+            <span>{{ location.focal_point }}</span>
         </div>
         {% endif %}
         {% if location.google_pin %}
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Google Pin" %}</span>
-            <a href="{{ location.google_pin }}" target="_blank" rel="noopener" style="font-size:14px;">{% trans "Open in Google Maps" %}</a>
+            <span class="summary-label">{% trans "Google Pin" %}</span>
+            <a href="{{ location.google_pin }}" target="_blank" rel="noopener">{% trans "Open in Google Maps" %}</a>
         </div>
         {% endif %}
         <div>
-            <span style="font-size:12px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:4px;">{% trans "Total Units" %}</span>
-            <span style="font-size:14px; font-weight:600;">{{ page_obj.paginator.count }}</span>
+            <span class="summary-label">{% trans "Total Units" %}</span>
+            <span class="text-strong">{{ page_obj.paginator.count }}</span>
+        </div>
+        <div>
+            <span class="summary-label">{% trans "Parking" %}</span>
+            <span class="text-strong">
+                <a href="/locations/{{ location.uuid }}/parking/">{{ location.parking_places.count }}</a>
+            </span>
         </div>
     </div>
 </div>
 
 <!-- Units Section -->
 <div class="page-header">
-    <h2 style="font-size:20px; font-weight:600;">{% trans "Units" %}</h2>
+    <h2>{% trans "Units" %}</h2>
     {% if user.is_admin %}
-    <a href="/locations/{{ location.uuid }}/unit/create/" class="btn btn--primary">{% trans "+ Add Unit" %}</a>
+    <a href="/locations/{{ location.uuid }}/unit/create/" class="btn btn--primary btn--small">{% trans "+ Add Unit" %}</a>
     {% endif %}
 </div>
 
-<div class="card" style="padding: 0; overflow: hidden;">
+<div class="card card--flush">
     {% if page_obj %}
     <table class="table">
         <thead>
@@ -81,11 +87,11 @@
                 <td data-label="{% trans "Area (sqm)" %}">{{ unit.sqm }} m²</td>
                 {% if user.is_admin %}
                 <td onclick="event.stopPropagation()">
-                    <div class="flex gap-8">
+                    <div class="flex gap-8 flex-wrap">
                         <a href="/locations/{{ location.uuid }}/unit/{{ unit.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
                         {% if user.is_super_user %}
                         <form action="/locations/{{ location.uuid }}/unit/{{ unit.uuid }}/delete/" method="post"
-                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
                         </form>
@@ -96,7 +102,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="{% if user.is_admin %}4{% else %}3{% endif %}" class="text-center" style="padding:32px; color:var(--text-secondary);">
+                <td colspan="{% if user.is_admin %}4{% else %}3{% endif %}" class="table-empty">
                     {% trans "No units yet." %}
                 </td>
             </tr>
@@ -129,8 +135,8 @@
     {% endif %}
 
     {% else %}
-    <div class="text-center" style="padding:48px 16px; color:var(--text-secondary);">
-        {% trans "No units found. Click '+ Add Unit' to create one." %}
+    <div class="empty-state empty-state--table">
+        {% trans "No units found." %}
     </div>
     {% endif %}
 </div>

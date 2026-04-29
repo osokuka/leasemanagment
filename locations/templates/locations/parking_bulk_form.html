@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} - {% trans "Lease Management" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+    <a href="/locations/{{ location.uuid }}/" class="btn btn--secondary">{% trans "Back to Location" %}</a>
+</div>
+
+<div class="card card--wide">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.labels.id_for_label }}">{{ form.labels.label }} *</label>
+            {{ form.labels }}
+            {% if form.labels.help_text %}
+            <small class="text-muted">{{ form.labels.help_text }}</small>
+            {% endif %}
+            {% if form.labels.errors %}
+            <div class="form-error">{{ form.labels.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label>
+                {{ form.covered }}
+                {{ form.covered.label }}
+            </label>
+            {% if form.covered.errors %}
+            <div class="form-error">{{ form.covered.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.unit.id_for_label }}">{{ form.unit.label }}</label>
+            {{ form.unit }}
+            {% if form.unit.help_text %}
+            <small class="text-muted">{{ form.unit.help_text }}</small>
+            {% endif %}
+            {% if form.unit.errors %}
+            <div class="form-error">{{ form.unit.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="flex gap-12 mt-24">
+            <button type="submit" class="btn btn--primary">{% trans "Create All" %}</button>
+            <a href="/locations/{{ location.uuid }}/" class="btn btn--secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+
+<div class="card card--wide mt-24">
+    <h3>{% trans "Example Input" %}</h3>
+    <pre class="code-block">P1
+P2
+P3
+P4
+P5</pre>
+    <p class="text-muted">{% trans "Each label will create one parking place. Duplicates will be skipped with a warning." %}</p>
+</div>
+{% endblock %}

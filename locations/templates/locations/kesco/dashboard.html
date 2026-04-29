@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "KESCO Integration" %} — {% trans "Lease Management" %}{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="page-header">
+        <h1>{% trans "KESCO Integration" %}</h1>
+    </div>
+
+    <!-- KPI Summary: Cards on mobile only, table on desktop -->
+    <div class="kpi-table-desktop">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Metric" %}</th>
+                    <th>{% trans "Value" %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="{% trans "Metric" %}">{% trans "KESCO Meters" %}</td>
+                    <td data-label="{% trans "Value" %}"><strong>{{ kesco_meters }}</strong> / {{ total_meters }} {% trans "total" %}</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td data-label="{% trans "Metric" %}">{% trans "Credentials" %}</td>
+                    <td data-label="{% trans "Value" %}"><strong>{{ credentials|length }}</strong></td>
+                    <td>
+                        {% if credentials %}
+                        <form action="{% url 'locations:kesco_trigger_sync_all' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--secondary btn--small">{% trans "Sync All" %} →</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if credentials %}
+                <tr>
+                    <td data-label="{% trans "Metric" %}">{% trans "Quick Actions" %}</td>
+                    <td data-label="{% trans "Value" %}"></td>
+                    <td>
+                        <a href="{% url 'locations:kesco_credential_create' %}" class="btn btn--primary btn--small">+ {% trans "Add Credential" %}</a>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="kpi-grid kesco-kpi-grid">
+        <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ kesco_meters }}</div>
+            <div class="kpi-card__label">{% trans "KESCO Meters" %}</div>
+            <div class="kpi-card__sum">/ {{ total_meters }} {% trans "total" %}</div>
+        </div>
+
+        <!-- Active Credentials -->
+        <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 15V17M6 9C6 5.69 8.69 3 12 3C15.31 3 18 5.69 18 9V9.01M4 13H20C20.55 13 21 13.45 21 14V19C21 19.55 20.55 20 20 20H4C3.45 20 3 19.55 3 19V14C3 13.45 3.45 13 4 13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__number">{{ credentials|length }}</div>
+            <div class="kpi-card__label">{% trans "Credentials" %}</div>
+        </div>
+
+        <!-- Sync All -->
+        {% if credentials %}
+        <form action="{% url 'locations:kesco_trigger_sync_all' %}" method="post" class="kpi-card kpi-card--action">
+            {% csrf_token %}
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 4V9H4.58C4.22 9.67 4 10.46 4 11.3C4 14.14 6.28 16.45 9.1 16.45C10.66 16.45 12.04 15.75 13 14.6M20 20V15H19.42C19.78 14.33 20 13.54 20 12.7C20 9.86 17.72 7.55 14.9 7.55C13.34 7.55 11.96 8.25 11 9.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__label mt-8">{% trans "Sync All" %}</div>
+        </form>
+        {% endif %}
+
+        <!-- Add Credential -->
+        <a href="{% url 'locations:kesco_credential_create' %}" class="kpi-card kpi-card--action">
+            <div class="kpi-card__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="kpi-card__label mt-8">{% trans "Add Credential" %}</div>
+        </a>
+    </div>
+
+    <!-- Credentials Table -->
+    {% if credentials %}
+    <div class="dashboard-section">
+        <div class="dashboard-section__header">
+            <h2>{% trans "Credentials" %}</h2>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Username" %}</th>
+                    <th>{% trans "User ID" %}</th>
+                    <th>{% trans "Token" %}</th>
+                    <th>{% trans "Last Sync" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cred in credentials %}
+                <tr>
+                    <td data-label="{% trans "Username" %}"><strong>{{ cred.username }}</strong></td>
+                    <td data-label="{% trans "User ID" %}"><code class="text-xs">{{ cred.user_id|default:"—" }}</code></td>
+                    <td data-label="{% trans "Token" %}">
+                        {% if cred.is_token_valid %}
+                        <span class="badge badge--paid">{% trans "Valid" %}</span>
+                        {% else %}
+                        <span class="badge badge--unpaid">{% trans "Expired" %}</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="{% trans "Last Sync" %}">
+                        {% if cred.last_sync_at %}
+                        {{ cred.last_sync_at|date:"m-d H:i" }}
+                        {% else %}
+                        <span class="text-muted">{% trans "Never" %}</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="{% trans "Status" %}">
+                        <span class="text-muted">{{ cred.last_sync_status|default:"—" }}</span>
+                    </td>
+                    <td data-label="{% trans "Actions" %}" onclick="event.stopPropagation()">
+                        <div class="flex gap-8 flex-wrap">
+                            <a href="{% url 'locations:kesco_credential_login_page' cred.uuid %}" class="btn btn--secondary btn--small">
+                                {% trans "View" %}
+                            </a>
+                            <form action="{% url 'locations:kesco_trigger_sync' cred.uuid %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn--secondary btn--small">
+                                    {% trans "Sync" %}
+                                </button>
+                            </form>
+                            <a href="{% url 'locations:kesco_credential_edit' cred.uuid %}" class="btn btn--secondary btn--small">
+                                {% trans "Edit" %}
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="dashboard-empty">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M32 15C27.58 15 24 18.58 24 23V41C24 45.42 27.58 49 32 49C36.42 49 40 45.42 40 41V23C40 18.58 36.42 15 32 15Z" stroke="var(--border-color)" stroke-width="2"/>
+            <path d="M28 23H36M28 28H36M28 33H32" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <p>
+            {% trans "No KESCO credentials configured." %}
+            <a href="{% url 'locations:kesco_credential_create' %}" class="btn btn--primary btn--small ml-8">
+                {% trans "Add Credential" %}
+            </a>
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Recent Ledgers -->
+    {% if recent_syncs %}
+    <div class="dashboard-section">
+        <div class="dashboard-section__header">
+            <h2>{% trans "Recent Meter Ledgers" %}</h2>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{% trans "Meter" %}</th>
+                    <th>{% trans "Period" %}</th>
+                    <th>{% trans "Billed Amount" %}</th>
+                    <th>{% trans "Created" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ledger in recent_syncs %}
+                <tr>
+                    <td data-label="{% trans "Meter" %}">{{ ledger.meter.name }}</td>
+                    <td data-label="{% trans "Period" %}">{{ ledger.month }}/{{ ledger.year }}</td>
+                    <td data-label="{% trans "Billed Amount" %}"><strong>€{{ ledger.billed_amount|default:"0" }}</strong></td>
+                    <td data-label="{% trans "Created" %}">{{ ledger.created_at|date:"m-d H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

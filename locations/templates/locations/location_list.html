@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Locations" %} - Bibaj Menaxhment{% endblock %}
+{% block title %}{% trans "Locations" %} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -11,7 +11,7 @@
     {% endif %}
 </div>
 
-<div class="card" style="padding: 0; overflow: hidden;">
+<div class="card card--flush">
     {% if page_obj %}
     <table class="table">
         <thead>
@@ -44,7 +44,7 @@
                         <a href="/locations/{{ loc.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
                         {% if user.is_super_user %}
                         <form action="/locations/{{ loc.uuid }}/delete/" method="post"
-                              onsubmit="return confirm('{% trans "Are you sure?" %}')" style="display:inline;">
+                              onsubmit="return confirm('{% trans "Are you sure?" %}')" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
                         </form>
@@ -82,7 +82,7 @@
     {% endif %}
 
     {% else %}
-    <div class="text-center" style="padding: 48px 16px; color: var(--text-secondary);">
+    <div class="empty-state">
         {% trans "No locations found." %}
     </div>
     {% endif %}

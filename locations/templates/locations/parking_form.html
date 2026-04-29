@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ title }} - Bibaj Menaxhment{% endblock %}
+{% block title %}{{ title }} - {% trans "Lease Management" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -9,7 +9,7 @@
     <a href="/locations/{{ location.uuid }}/" class="btn btn--secondary">{% trans "Back to Location" %}</a>
 </div>
 
-<div class="card" style="max-width:600px;">
+<div class="card card--narrow">
     <form method="post">
         {% csrf_token %}
         {% for field in form %}

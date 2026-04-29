@@ -1,4 +1,4 @@
-# Bibaj Menaxhment — Building Management System
+# Lease Management — Building Management System
 
 Django full-stack web application with PostgreSQL, containerized via Docker.
 

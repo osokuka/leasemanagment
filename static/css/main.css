@@ -216,10 +216,10 @@ textarea {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     font-size: 14px;
-    width: 100%;
     transition: border-color 0.15s, box-shadow 0.15s;
     font-family: inherit;
     line-height: 1.5;
+    box-sizing: border-box;
 }
 
 textarea {
@@ -258,10 +258,50 @@ input[type="month"] {
 
 input[type="date"] {
     cursor: pointer;
+    position: relative;
+}
+
+/* Ensure calendar picker icon is visible in all browsers */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* Firefox date picker */
+input[type="date"]::-moz-calendar-picker-indicator {
+    cursor: pointer;
 }
 
 .form-group {
     margin-bottom: 16px;
+}
+
+/* Full-width inputs inside form groups */
+.form-group .form-control,
+.form-group .form-select,
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group input[type="url"],
+.form-group input[type="tel"],
+.form-group input[type="search"],
+.form-group input[type="date"],
+.form-group input[type="month"] {
+    width: 100%;
 }
 
 .form-group label {
@@ -672,6 +712,42 @@ input[type="date"] {
     background-color: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-primary));
     color: var(--accent-primary);
     border-color: color-mix(in srgb, var(--accent-primary) 35%, var(--border-color));
+}
+
+/* Sale status badges */
+.badge--for_sale {
+    background-color: color-mix(in srgb, var(--info) 12%, var(--bg-primary));
+    color: var(--info);
+    border-color: color-mix(in srgb, var(--info) 35%, var(--border-color));
+}
+
+.badge--reserved {
+    background-color: color-mix(in srgb, var(--warning) 12%, var(--bg-primary));
+    color: var(--warning);
+    border-color: color-mix(in srgb, var(--warning) 35%, var(--border-color));
+}
+
+.badge--sold_partial {
+    background-color: color-mix(in srgb, #B78103 15%, var(--bg-primary));
+    color: #B78103;
+    border-color: color-mix(in srgb, #B78103 40%, var(--border-color));
+}
+
+.badge--sold_paid {
+    background-color: color-mix(in srgb, var(--success) 12%, var(--bg-primary));
+    color: var(--success);
+    border-color: color-mix(in srgb, var(--success) 35%, var(--border-color));
+}
+
+.badge--cancelled {
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.badge--not_for_sale {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
 }
 
 /* Lease ledger status badges */
@@ -1677,4 +1753,19 @@ input[type="date"] {
 /* --- Sidebar: top-level item (no submenu) --- */
 .sidebar__item--top {
     font-weight: 600;
+}
+
+/* --- Sale Filters (status tabs only) --- */
+.sale-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    margin-bottom: 20px;
+}
+
+.sale-filters__tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
 }

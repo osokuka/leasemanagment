@@ -147,7 +147,7 @@
                 </div>
             </div>
 
-            <!-- Leases Group -->
+            <!-- Leases & Sales Group -->
             <div class="sidebar__group">
                 <button class="sidebar__group-header" onclick="toggleSubmenu(this)">
                     <span class="sidebar__item-text">
@@ -155,7 +155,7 @@
                             <path d="M4 3h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.5"/>
                             <path d="M7 7h6M7 10h6M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
-                        <span>{% trans "Lease Management" %}</span>
+                        <span>{% trans "Leases & Sales" %}</span>
                     </span>
                     <svg class="sidebar__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
@@ -165,6 +165,12 @@
                             <path d="M6 3h8v14H6V3ZM8 6h4M8 9h4M8 12h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                         <span>{% trans "Leases" %}</span>
+                    </a>
+                    <a href="/sales/" class="sidebar__item sidebar__item--child">
+                        <svg class="sidebar__icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 17L8 3h4l5 14H3ZM6 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>{% trans "Sales" %}</span>
                     </a>
                 </div>
             </div>

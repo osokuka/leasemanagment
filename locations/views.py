@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -5,8 +7,8 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from .models import Location, Unit, Meter, MeterLedger, ParkingPlace, Lease, LeaseLedger, LeaseStatus
-from .forms import LocationForm, UnitForm, MeterForm, MeterLedgerForm, ParkingPlaceForm, ParkingBulkCreateForm, LeaseForm, LeaseLedgerForm
+from .models import Location, Unit, Meter, MeterLedger, ParkingPlace, Lease, LeaseLedger, LeaseStatus, SalePayment, SaleStatus, SalePaymentStatus
+from .forms import LocationForm, UnitForm, MeterForm, MeterLedgerForm, ParkingPlaceForm, ParkingBulkCreateForm, LeaseForm, LeaseLedgerForm, SalePaymentForm
 
 LEASES_PER_PAGE = 15
 
@@ -301,12 +303,23 @@ def unit_detail(request, location_uuid, unit_uuid):
             entry.running_balance = balance
             entry.effectively_paid = entry.balance_before < 0
         lease_ledgers.reverse()
+
+    # Sale payments
+    sale_payments = list(unit.sale_payments.all().order_by('due_date'))
+    # Compute running balance for sale payments
+    sale_balance = 0
+    for sp in sale_payments:
+        sp.balance_before = sale_balance
+        sale_balance += (sp.amount_due or 0) - (sp.amount_paid or 0)
+        sp.running_balance = sale_balance
+
     return render(request, 'locations/unit_detail.html', {
         'unit': unit,
         'meters': meters,
         'parking': parking,
         'available_parking': available_parking,
         'lease_ledgers': lease_ledgers,
+        'sale_payments': sale_payments,
     })
 
 
@@ -813,3 +826,129 @@ def lease_ledger_delete(request, lease_uuid, ledger_uuid):
     ledger.delete()
     messages.success(request, _('Ledger entry deleted successfully.'))
     return redirect('/leases/' + str(lease_uuid) + '/ledger/')
+
+
+# ===========================
+# Sales
+# ===========================
+@login_required
+def sale_list(request):
+    """List of units for sale with status filters."""
+    from django.db.models import Q
+
+    units = Unit.objects.select_related('location').filter(
+        sale_status__in=[SaleStatus.FOR_SALE, SaleStatus.RESERVED,
+                         SaleStatus.SOLD_PARTIAL, SaleStatus.SOLD_PAID]
+    )
+    status_filter = request.GET.get('status', '').strip()
+    search_query = request.GET.get('q', '').strip()
+
+    if status_filter and status_filter != 'all':
+        units = units.filter(sale_status=status_filter)
+    if search_query:
+        units = units.filter(
+            Q(name__icontains=search_query)
+            | Q(buyer_name__icontains=search_query)
+            | Q(location__name__icontains=search_query)
+        )
+
+    units = units.order_by('location__name', 'name')
+    paginator = Paginator(units, LEASES_PER_PAGE)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Summary counts
+    summary = {
+        'for_sale': Unit.objects.filter(sale_status=SaleStatus.FOR_SALE).count(),
+        'reserved': Unit.objects.filter(sale_status=SaleStatus.RESERVED).count(),
+        'sold_partial': Unit.objects.filter(sale_status=SaleStatus.SOLD_PARTIAL).count(),
+        'sold_paid': Unit.objects.filter(sale_status=SaleStatus.SOLD_PAID).count(),
+    }
+
+    return render(request, 'locations/sale_list.html', {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'summary': summary,
+    })
+
+
+@login_required
+def sale_print(request, unit_uuid):
+    """Print-friendly sale report for a unit."""
+    from accounts.models import CompanyProfile
+
+    unit = get_object_or_404(Unit, uuid=unit_uuid)
+    payments = list(unit.sale_payments.all().order_by('due_date'))
+
+    balance = 0
+    total_due = Decimal('0')
+    total_paid = Decimal('0')
+    for sp in payments:
+        sp.balance_before = balance
+        total_due += sp.amount_due or Decimal('0')
+        total_paid += sp.amount_paid or Decimal('0')
+        balance += (sp.amount_due or Decimal('0')) - (sp.amount_paid or Decimal('0'))
+        sp.running_balance = balance
+
+    remaining = unit.sale_balance or Decimal('0')
+    company = CompanyProfile.get_or_create_default()
+
+    return render(request, 'locations/sale_print.html', {
+        'unit': unit,
+        'payments': payments,
+        'total_due': total_due,
+        'total_paid': total_paid,
+        'remaining_balance': remaining,
+        'company': company,
+        'now': __import__('datetime').date.today(),
+    })
+
+
+# ===========================
+# Sale Payment CRUD
+# ===========================
+@login_required
+def sale_payment_create(request, location_uuid, unit_uuid):
+    unit = get_object_or_404(Unit, uuid=unit_uuid, location__uuid=location_uuid)
+    if request.method == 'POST':
+        form = SalePaymentForm(request.POST, request.FILES)
+        if form.is_valid():
+            sp = form.save(commit=False)
+            sp.unit = unit
+            sp.save()
+            messages.success(request, _('Sale payment installment #{num} created.').format(num=sp.installment_number))
+            return redirect('/locations/' + str(location_uuid) + '/units/' + str(unit_uuid) + '/')
+    else:
+        next_num = unit.sale_payments.count() + 1
+        form = SalePaymentForm(initial={'installment_number': next_num})
+    return render(request, 'locations/sale_payment_form.html', {
+        'form': form, 'title': _('Add Sale Payment'), 'unit': unit,
+    })
+
+
+@login_required
+def sale_payment_update(request, location_uuid, unit_uuid, payment_uuid):
+    unit = get_object_or_404(Unit, uuid=unit_uuid, location__uuid=location_uuid)
+    sp = get_object_or_404(SalePayment, uuid=payment_uuid, unit=unit)
+    if request.method == 'POST':
+        form = SalePaymentForm(request.POST, request.FILES, instance=sp)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Sale payment updated successfully.'))
+            return redirect('/locations/' + str(location_uuid) + '/units/' + str(unit_uuid) + '/')
+    else:
+        form = SalePaymentForm(instance=sp)
+    return render(request, 'locations/sale_payment_form.html', {
+        'form': form, 'title': _('Edit Sale Payment'), 'unit': unit, 'payment': sp,
+    })
+
+
+@super_user_required
+@require_POST
+def sale_payment_delete(request, location_uuid, unit_uuid, payment_uuid):
+    unit = get_object_or_404(Unit, uuid=unit_uuid, location__uuid=location_uuid)
+    sp = get_object_or_404(SalePayment, uuid=payment_uuid, unit=unit)
+    sp.delete()
+    messages.success(request, _('Sale payment deleted successfully.'))
+    return redirect('/locations/' + str(location_uuid) + '/units/' + str(unit_uuid) + '/')

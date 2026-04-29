@@ -61,4 +61,9 @@ urlpatterns = [
     path('<uuid:location_uuid>/parking/bulk-create/', views.parking_bulk_create, name='parking_bulk_create'),
     path('<uuid:location_uuid>/parking/<uuid:parking_uuid>/edit/', views.parking_update, name='parking_update'),
     path('<uuid:location_uuid>/parking/<uuid:parking_uuid>/delete/', views.parking_delete, name='parking_delete'),
+
+    # Sale Payment CRUD
+    path('<uuid:location_uuid>/units/<uuid:unit_uuid>/sale-payment/create/', views.sale_payment_create, name='sale_payment_create'),
+    path('<uuid:location_uuid>/units/<uuid:unit_uuid>/sale-payment/<uuid:payment_uuid>/edit/', views.sale_payment_update, name='sale_payment_update'),
+    path('<uuid:location_uuid>/units/<uuid:unit_uuid>/sale-payment/<uuid:payment_uuid>/delete/', views.sale_payment_delete, name='sale_payment_delete'),
 ]

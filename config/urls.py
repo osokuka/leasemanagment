@@ -41,6 +41,10 @@ urlpatterns = [
     path('leases/<uuid:lease_uuid>/ledger/create/', location_views.lease_ledger_create, name='lease_ledger_create'),
     path('leases/<uuid:lease_uuid>/ledger/<uuid:ledger_uuid>/edit/', location_views.lease_ledger_update, name='lease_ledger_update'),
     path('leases/<uuid:lease_uuid>/ledger/<uuid:ledger_uuid>/delete/', location_views.lease_ledger_delete, name='lease_ledger_delete'),
+
+    # Sales
+    path('sales/', location_views.sale_list, name='sale_list'),
+    path('sales/<uuid:unit_uuid>/print/', location_views.sale_print, name='sale_print'),
 ]
 
 if settings.DEBUG:

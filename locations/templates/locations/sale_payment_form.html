@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} - {% trans "Lease Management" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ title }}</h1>
+    <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/" class="btn btn--secondary">{% trans "Back to Unit" %}</a>
+</div>
+
+<div class="card card--narrow">
+    <div class="mb-16">
+        <span class="summary-label">{% trans "Unit" %}</span>
+        <span class="text-strong">{{ unit.name }}</span>
+        {% if unit.sale_price %}
+        <span class="ml-12">— {% trans "Sale Price" %}: €{{ unit.sale_price|floatformat:2 }}</span>
+        {% endif %}
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+            <div class="form-help">{{ field.help_text }}</div>
+            {% endif %}
+            {% if field.errors %}
+            <div class="form-error">{{ field.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div class="flex gap-12 mt-24">
+            <button type="submit" class="btn btn--primary">{% trans "Save" %}</button>
+            <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/" class="btn btn--secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

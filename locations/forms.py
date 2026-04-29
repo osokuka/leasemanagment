@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from datetime import date
-from .models import Location, Unit, Meter, MeterLedger, ParkingPlace, Lease, LeaseLedger
+from .models import Location, Unit, Meter, MeterLedger, ParkingPlace, Lease, LeaseLedger, SalePayment, SaleStatus
 
 
 class LocationForm(forms.ModelForm):
@@ -31,20 +31,40 @@ class LocationForm(forms.ModelForm):
 class UnitForm(forms.ModelForm):
     class Meta:
         model = Unit
-        fields = ['name', 'sqm', 'unit_type', 'lease']
+        fields = ['name', 'sqm', 'unit_type', 'lease', 'sale_status', 'sale_price',
+                  'buyer_name', 'buyer_contact', 'buyer_email', 'buyer_phone',
+                  'sale_contract', 'sale_agreement_date', 'sale_notes']
         labels = {
             'name': _('Unit Name'),
             'sqm': _('Area (sqm)'),
             'unit_type': _('Unit Type'),
             'lease': _('Assign Lease'),
+            'sale_status': _('Sale Status'),
+            'sale_price': _('Sale Price (€)'),
+            'buyer_name': _('Buyer Name'),
+            'buyer_contact': _('Buyer Contact Person'),
+            'buyer_email': _('Buyer Email'),
+            'buyer_phone': _('Buyer Phone'),
+            'sale_contract': _('Sale Contract'),
+            'sale_agreement_date': _('Sale Agreement Date'),
+            'sale_notes': _('Sale Notes'),
+        }
+        widgets = {
+            'sale_agreement_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
+        for field_name, field in self.fields.items():
+            if field_name == 'sale_agreement_date':
+                continue  # already configured in widgets
             if hasattr(field, 'widget'):
-                if isinstance(field.widget, forms.Select):
+                if isinstance(field, forms.ChoiceField) and isinstance(field.widget, forms.Select):
                     field.widget.attrs.update({'class': 'form-select'})
+                elif isinstance(field.widget, forms.Select):
+                    field.widget.attrs.update({'class': 'form-select'})
+                elif isinstance(field.widget, forms.Textarea):
+                    field.widget.attrs.update({'class': 'form-control', 'rows': 3})
                 else:
                     field.widget.attrs.update({'class': 'form-control'})
 
@@ -396,5 +416,38 @@ class LeaseForm(forms.ModelForm):
             if hasattr(field, 'widget'):
                 if isinstance(field.widget, forms.ClearableFileInput):
                     pass  # file input keeps default styling
+                else:
+                    field.widget.attrs.update({'class': 'form-control'})
+
+
+class SalePaymentForm(forms.ModelForm):
+    class Meta:
+        model = SalePayment
+        fields = ['installment_number', 'due_date', 'amount_due', 'amount_paid',
+                  'payment_date', 'payment_slip', 'notes']
+        labels = {
+            'installment_number': _('Installment #'),
+            'due_date': _('Due Date'),
+            'amount_due': _('Amount Due (€)'),
+            'amount_paid': _('Amount Paid (€)'),
+            'payment_date': _('Payment Date'),
+            'payment_slip': _('Payment Slip'),
+            'notes': _('Notes'),
+        }
+        widgets = {
+            'due_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'payment_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'payment_slip': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'notes': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if field_name in ('due_date', 'payment_date', 'notes'):
+                continue  # already configured in widgets
+            if hasattr(field, 'widget'):
+                if isinstance(field.widget, forms.ClearableFileInput):
+                    pass
                 else:
                     field.widget.attrs.update({'class': 'form-control'})

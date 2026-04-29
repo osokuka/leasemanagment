@@ -14,6 +14,10 @@ def contract_upload_path(instance, filename):
     return os.path.join('contracts', str(instance.uuid), filename)
 
 
+def sale_contract_upload_path(instance, filename):
+    return os.path.join('sale_contracts', str(instance.uuid), filename)
+
+
 class UnitType(models.TextChoices):
     APARTMENT = 'apartment', _('Apartment')
     HOUSE = 'house', _('House')
@@ -22,6 +26,15 @@ class UnitType(models.TextChoices):
     CAFE_RESTAURANT = 'cafe_restaurant', _('Cafe & Restaurant')
     SPACE = 'space', _('Space')
     UNDEFINED = 'undefined', _('Undefined')
+
+
+class SaleStatus(models.TextChoices):
+    NOT_FOR_SALE = 'not_for_sale', _('Not For Sale')
+    FOR_SALE = 'for_sale', _('For Sale')
+    RESERVED = 'reserved', _('Reserved')
+    SOLD_PARTIAL = 'sold_partial', _('Sold (Partial)')
+    SOLD_PAID = 'sold_paid', _('Sold (Paid)')
+    CANCELLED = 'cancelled', _('Cancelled')
 
 
 class MeterType(models.TextChoices):
@@ -340,6 +353,61 @@ class Unit(models.Model):
         default=UnitType.UNDEFINED,
         verbose_name=_('Unit Type'),
     )
+
+    # Sale fields
+    sale_status = models.CharField(
+        max_length=20,
+        choices=SaleStatus.choices,
+        default=SaleStatus.NOT_FOR_SALE,
+        verbose_name=_('Sale Status'),
+    )
+    sale_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        verbose_name=_('Sale Price (€)'),
+    )
+    buyer_name = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_('Buyer Name'),
+    )
+    buyer_contact = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name=_('Buyer Contact Person'),
+    )
+    buyer_email = models.EmailField(
+        blank=True,
+        null=True,
+        verbose_name=_('Buyer Email'),
+    )
+    buyer_phone = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name=_('Buyer Phone'),
+    )
+    sale_contract = models.FileField(
+        upload_to=sale_contract_upload_path,
+        blank=True,
+        null=True,
+        verbose_name=_('Sale Contract'),
+    )
+    sale_agreement_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_('Sale Agreement Date'),
+    )
+    sale_notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name=_('Sale Notes'),
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -354,6 +422,56 @@ class Unit(models.Model):
     @property
     def is_leased(self):
         return self.lease is not None and self.lease.is_active
+
+    @property
+    def is_for_sale(self):
+        return self.sale_status in (
+            SaleStatus.FOR_SALE,
+            SaleStatus.RESERVED,
+            SaleStatus.SOLD_PARTIAL,
+            SaleStatus.SOLD_PAID,
+        )
+
+    @property
+    def sale_balance(self):
+        """Remaining balance on sale. Returns None if not sold."""
+        if not self.sale_price:
+            return None
+        total_paid = self.sale_payments.aggregate(
+            total=models.Sum('amount_paid')
+        )['total'] or Decimal('0')
+        return self.sale_price - total_paid
+
+    @property
+    def sale_total_paid(self):
+        total_paid = self.sale_payments.aggregate(
+            total=models.Sum('amount_paid')
+        )['total'] or Decimal('0')
+        return total_paid
+
+    def _update_sale_status_from_payments(self):
+        """Update sale_status based on payment progress. Called from SalePayment.save()."""
+        if self.sale_status not in (SaleStatus.RESERVED, SaleStatus.SOLD_PARTIAL, SaleStatus.SOLD_PAID):
+            return
+
+        total_due = self.sale_payments.aggregate(
+            total=models.Sum('amount_due')
+        )['total'] or Decimal('0')
+        total_paid = self.sale_payments.aggregate(
+            total=models.Sum('amount_paid')
+        )['total'] or Decimal('0')
+
+        if total_due == 0:
+            return
+
+        if total_paid >= total_due:
+            self.sale_status = SaleStatus.SOLD_PAID
+        elif total_paid > 0:
+            self.sale_status = SaleStatus.SOLD_PARTIAL
+        else:
+            self.sale_status = SaleStatus.RESERVED
+
+        self.save(update_fields=['sale_status', 'updated_at'])
 
     @property
     def parking_count(self):
@@ -682,6 +800,100 @@ class KescoCredential(models.Model):
             if 'captcha' in str(e).lower():
                 return None, True
             raise
+
+
+class SalePaymentStatus(models.TextChoices):
+    UNPAID = 'unpaid', _('Unpaid')
+    PARTIAL = 'partial', _('Partial')
+    PAID = 'paid', _('Paid')
+    OVERDUE = 'overdue', _('Overdue')
+
+
+class SalePayment(models.Model):
+    """Installment payment for a unit sale."""
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        db_index=True,
+    )
+    unit = models.ForeignKey(
+        Unit,
+        on_delete=models.CASCADE,
+        related_name='sale_payments',
+        verbose_name=_('Unit'),
+    )
+    installment_number = models.IntegerField(
+        verbose_name=_('Installment #'),
+    )
+    due_date = models.DateField(
+        verbose_name=_('Due Date'),
+    )
+    amount_due = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name=_('Amount Due (€)'),
+    )
+    amount_paid = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        verbose_name=_('Amount Paid (€)'),
+    )
+    payment_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_('Payment Date'),
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=SalePaymentStatus.choices,
+        default=SalePaymentStatus.UNPAID,
+        verbose_name=_('Status'),
+    )
+    payment_slip = models.ImageField(
+        upload_to='sale_payment_slips',
+        blank=True,
+        null=True,
+        verbose_name=_('Payment Slip'),
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name=_('Notes'),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('Sale Payment')
+        verbose_name_plural = _('Sale Payments')
+        ordering = ['unit', 'due_date']
+        unique_together = ['unit', 'installment_number']
+
+    def __str__(self):
+        return f'{self.unit.name} — Installment {self.installment_number} ({self.get_status_display()})'
+
+    def save(self, *args, **kwargs):
+        # Auto-determine status
+        today = date.today()
+        if self.amount_paid >= self.amount_due and self.amount_due > 0:
+            self.status = SalePaymentStatus.PAID
+        elif self.amount_paid > 0:
+            self.status = SalePaymentStatus.PARTIAL
+        elif self.due_date < today:
+            self.status = SalePaymentStatus.OVERDUE
+        else:
+            self.status = SalePaymentStatus.UNPAID
+
+        # Auto-set payment date when fully paid
+        if self.amount_paid >= self.amount_due and not self.payment_date:
+            self.payment_date = today
+
+        super().save(*args, **kwargs)
+
+        # Update unit sale status
+        self.unit._update_sale_status_from_payments()
 
 
 class ParkingPlace(models.Model):

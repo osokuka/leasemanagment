@@ -1,0 +1,274 @@
+{% load i18n %}{% load ledger_extras %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ unit.name }}_{{ now|date:"Y-m-d" }}_{% trans "Sale Report" %}</title>
+    <style>
+        :root {
+            --p-bg: #fff; --p-text: #000; --p-muted: #555; --p-faint: #999;
+            --p-border: #ddd; --p-strong: #333; --p-row: #f7f7f7;
+            --p-danger: #cc1022; --p-success: #057642; --p-warning: #b78103;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 11px; line-height: 1.45; color: var(--p-text);
+            background: var(--p-bg); padding: 24px;
+        }
+
+        /* Header */
+        .hdr {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 20px; padding-bottom: 12px;
+            border-bottom: 2px solid var(--p-strong);
+        }
+        .hdr-company { flex: 1; }
+        .hdr-company__name { font-size: 15px; font-weight: 700; line-height: 1.2; }
+        .hdr-company__detail { font-size: 9.5px; color: var(--p-muted); margin-top: 2px; }
+        .hdr-logo { max-height: 40px; max-width: 100px; object-fit: contain; margin-right: 16px; }
+        .hdr-right { text-align: right; white-space: nowrap; }
+        .hdr-right h1 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+        .hdr-right p { font-size: 10px; color: var(--p-muted); }
+
+        /* Financial bar */
+        .fin-bar {
+            display: flex; align-items: stretch; gap: 0;
+            border: 1px solid var(--p-border); border-radius: 4px;
+            margin-bottom: 16px; overflow: hidden;
+        }
+        .fin-bar__cell {
+            flex: 1; padding: 10px 14px; text-align: center;
+            border-right: 1px solid var(--p-border);
+        }
+        .fin-bar__cell:last-child { border-right: none; }
+        .fin-bar__label {
+            font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--p-muted); margin-bottom: 4px;
+        }
+        .fin-bar__value { font-size: 15px; font-weight: 700; line-height: 1.2; }
+        .fin-bar__value--danger { color: var(--p-danger); }
+        .fin-bar__value--success { color: var(--p-success); }
+
+        /* Detail block — two-column dense grid */
+        .detail-block {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+            margin-bottom: 16px;
+        }
+        .detail-section { }
+        .detail-section__title {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.4px; color: var(--p-muted);
+            padding-bottom: 5px; margin-bottom: 8px;
+            border-bottom: 1px solid var(--p-border);
+        }
+        .detail-table { width: 100%; }
+        .detail-table tr { border-bottom: 1px solid #eee; }
+        .detail-table tr:last-child { border-bottom: none; }
+        .detail-table td {
+            padding: 3px 0; font-size: 11px; vertical-align: top;
+        }
+        .detail-table td:first-child {
+            width: 38%; color: var(--p-muted); font-size: 10px;
+            white-space: nowrap;
+        }
+        .detail-table td:last-child { font-weight: 500; }
+
+        /* Notes */
+        .notes {
+            margin-top: 8px; padding: 6px 10px;
+            background: var(--p-row); border-radius: 3px;
+            font-size: 10px; color: var(--p-muted);
+        }
+
+        /* Payment table */
+        .pay-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .pay-table th {
+            padding: 5px 8px; text-align: left; font-size: 9px;
+            text-transform: uppercase; letter-spacing: 0.3px;
+            color: var(--p-muted); font-weight: 600;
+            background: var(--p-row); border-bottom: 1px solid var(--p-border);
+        }
+        .pay-table td {
+            padding: 6px 8px; font-size: 10.5px;
+            border-bottom: 1px solid #eee;
+        }
+        .pay-table tbody tr:nth-child(even) { background: #fcfcfc; }
+        .pay-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .pay-table .bal-positive { color: var(--p-danger); font-weight: 600; }
+        .pay-table .bal-settled { color: var(--p-success); font-weight: 600; }
+        .badge {
+            display: inline-block; padding: 1px 6px; border-radius: 2px;
+            font-size: 9px; font-weight: 600; text-transform: uppercase;
+        }
+        .badge--paid { background: #e8f5e9; color: var(--p-success); }
+        .badge--partial { background: #fff3e0; color: var(--p-warning); }
+        .badge--unpaid { background: #f5f5f5; color: var(--p-faint); }
+        .badge--overdue { background: #ffebee; color: var(--p-danger); }
+
+        .pay-summary {
+            margin-top: 10px; padding-top: 8px;
+            border-top: 1px solid var(--p-border);
+            display: flex; justify-content: flex-end; gap: 32px;
+            font-size: 10.5px;
+        }
+        .pay-summary__item { text-align: right; }
+        .pay-summary__label { color: var(--p-muted); }
+        .pay-summary__value { font-weight: 700; font-size: 12px; }
+
+        /* Footer */
+        .footer {
+            margin-top: 32px; padding-top: 8px;
+            border-top: 1px solid var(--p-border);
+            font-size: 9px; color: var(--p-faint); text-align: center;
+        }
+
+        /* Print */
+        @media print {
+            body { padding: 16mm 20mm; }
+            .no-print { display: none !important; }
+            @page { margin: 0; size: A4; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom:12px; display:flex; align-items:center; gap:12px;">
+        <button onclick="window.print()" style="padding:6px 18px; cursor:pointer; font-size:12px; border-radius:3px; border:1px solid #ccc; background:#fff;">
+            🖨️ {% trans "Print / PDF" %}
+        </button>
+        <a href="/sales/" style="font-size:11px; color:#666; text-decoration:none;">← {% trans "Back to Sales" %}</a>
+    </div>
+
+    <!-- Header -->
+    <div class="hdr">
+        <div style="display:flex; align-items:flex-start; flex:1;">
+            {% if company.logo %}
+            <img src="{{ company.logo.url }}" alt="" class="hdr-logo">
+            {% endif %}
+            <div class="hdr-company">
+                <div class="hdr-company__name">{{ company.company_name }}</div>
+                {% if company.tax_number or company.address %}
+                <div class="hdr-company__detail">
+                    {% if company.tax_number %}Nr. Fiskal: {{ company.tax_number }}{% endif %}
+                    {% if company.nipt %} · NIPT: {{ company.nipt }}{% endif %}
+                    {% if company.address %} · {{ company.address }}{% endif %}
+                    {% if company.phone %} · {{ company.phone }}{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="hdr-right">
+            <h1>{% trans "Sale Report" %}</h1>
+            <p>{{ unit.name }} · {{ unit.get_sale_status_display }}</p>
+            <p>{% trans "Date" %}: {{ now|date:"d-M-Y" }}</p>
+        </div>
+    </div>
+
+    <!-- Financial Bar -->
+    <div class="fin-bar">
+        <div class="fin-bar__cell">
+            <div class="fin-bar__label">{% trans "Sale Price" %}</div>
+            <div class="fin-bar__value">€{{ unit.sale_price|default:"0"|floatformat:2 }}</div>
+        </div>
+        <div class="fin-bar__cell">
+            <div class="fin-bar__label">{% trans "Total Paid" %}</div>
+            <div class="fin-bar__value fin-bar__value--success">€{{ total_paid|floatformat:2 }}</div>
+        </div>
+        <div class="fin-bar__cell">
+            <div class="fin-bar__label">{% trans "Remaining" %}</div>
+            <div class="fin-bar__value {% if remaining_balance > 0 %}fin-bar__value--danger{% else %}fin-bar__value--success{% endif %}">
+                €{{ remaining_balance|floatformat:2 }}
+            </div>
+        </div>
+        <div class="fin-bar__cell">
+            <div class="fin-bar__label">{% trans "Installments" %}</div>
+            <div class="fin-bar__value">{{ payments|length }}</div>
+        </div>
+    </div>
+
+    <!-- Details: Property + Buyer side by side -->
+    <div class="detail-block">
+        <div class="detail-section">
+            <div class="detail-section__title">{% trans "Property" %}</div>
+            <table class="detail-table">
+                <tr><td>{% trans "Unit" %}</td><td>{{ unit.name }}</td></tr>
+                <tr><td>{% trans "Location" %}</td><td>{{ unit.location.name }}</td></tr>
+                <tr><td>{% trans "Type" %}</td><td>{{ unit.get_unit_type_display }}</td></tr>
+                <tr><td>{% trans "Area" %}</td><td>{{ unit.sqm }} m²</td></tr>
+                <tr><td>{% trans "Agreement Date" %}</td><td>{% if unit.sale_agreement_date %}{{ unit.sale_agreement_date|date:"d-M-Y" }}{% else %}—{% endif %}</td></tr>
+            </table>
+        </div>
+        <div class="detail-section">
+            <div class="detail-section__title">{% trans "Buyer" %}</div>
+            <table class="detail-table">
+                <tr><td>{% trans "Name" %}</td><td>{{ unit.buyer_name|default:"—" }}</td></tr>
+                <tr><td>{% trans "Contact" %}</td><td>{{ unit.buyer_contact|default:"—" }}</td></tr>
+                <tr><td>{% trans "Phone" %}</td><td>{{ unit.buyer_phone|default:"—" }}</td></tr>
+                <tr><td>{% trans "Email" %}</td><td>{{ unit.buyer_email|default:"—" }}</td></tr>
+                <tr><td>{% trans "Status" %}</td><td>{{ unit.get_sale_status_display }}</td></tr>
+            </table>
+        </div>
+    </div>
+    {% if unit.sale_notes %}
+    <div class="notes"><strong>{% trans "Notes" %}:</strong> {{ unit.sale_notes }}</div>
+    {% endif %}
+
+    <!-- Payment Schedule -->
+    {% if payments %}
+    <div style="margin-top:16px;">
+        <div class="detail-section__title" style="margin-bottom:0;">{% trans "Payment Schedule" %}</div>
+        <table class="pay-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:90px;">{% trans "Due Date" %}</th>
+                    <th class="num">{% trans "Amount Due" %}</th>
+                    <th class="num">{% trans "Amount Paid" %}</th>
+                    <th class="num">{% trans "Balance" %}</th>
+                    <th style="width:80px;">{% trans "Status" %}</th>
+                    <th style="width:90px;">{% trans "Payment Date" %}</th>
+                    {% if unit.sale_notes or unit.sale_contract %}<th style="width:80px;">{% trans "Ref" %}</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for sp in payments %}
+                <tr>
+                    <td><strong>{{ sp.installment_number }}</strong></td>
+                    <td>{{ sp.due_date|date:"d-M-Y" }}</td>
+                    <td class="num">€{{ sp.amount_due|floatformat:2 }}</td>
+                    <td class="num">{% if sp.amount_paid > 0 %}€{{ sp.amount_paid|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td class="num">
+                        <strong class="{% if sp.running_balance > 0 %}bal-positive{% else %}bal-settled{% endif %}">
+                            €{{ sp.running_balance|floatformat:2 }}
+                        </strong>
+                    </td>
+                    <td><span class="badge badge--{{ sp.status }}">{{ sp.get_status_display }}</span></td>
+                    <td>{% if sp.payment_date %}{{ sp.payment_date|date:"d-M-Y" }}{% else %}—{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pay-summary">
+            <div class="pay-summary__item">
+                <div class="pay-summary__label">{% trans "Total Due" %}</div>
+                <div class="pay-summary__value">€{{ total_due|floatformat:2 }}</div>
+            </div>
+            <div class="pay-summary__item">
+                <div class="pay-summary__label">{% trans "Total Paid" %}</div>
+                <div class="pay-summary__value" style="color:var(--p-success);">€{{ total_paid|floatformat:2 }}</div>
+            </div>
+            <div class="pay-summary__item">
+                <div class="pay-summary__label">{% trans "Outstanding" %}</div>
+                <div class="pay-summary__value" style="{% if remaining_balance > 0 %}color:var(--p-danger){% else %}color:var(--p-success){% endif %};">
+                    €{{ remaining_balance|floatformat:2 }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        {{ company.company_name }} · {% trans "Sale Report" %} · {{ unit.name }} · {{ now|date:"d.m.Y" }}
+    </div>
+</body>
+</html>

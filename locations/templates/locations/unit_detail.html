@@ -26,6 +26,8 @@
             <span class="summary-label">{% trans "Status" %}</span>
             {% if unit.is_leased %}
             <span class="badge badge--leased">{% trans "Leased" %}</span>
+            {% elif unit.is_for_sale %}
+            <span class="badge badge--{{ unit.sale_status }}">{{ unit.get_sale_status_display }}</span>
             {% else %}
             <span class="badge badge--vacant">{% trans "Vacant" %}</span>
             {% endif %}
@@ -43,6 +45,24 @@
             <span class="summary-label">{% trans "Lease" %}</span>
             <a href="/leases/{{ unit.lease.uuid }}/">{{ unit.lease }}</a>
         </div>
+        {% endif %}
+        {% if unit.is_for_sale %}
+        <div>
+            <span class="summary-label">{% trans "Sale Price" %}</span>
+            <span class="text-strong">€{{ unit.sale_price|default:"—" }}</span>
+        </div>
+        <div>
+            <span class="summary-label">{% trans "Buyer" %}</span>
+            <span>{{ unit.buyer_name|default:"—" }}</span>
+        </div>
+        {% if unit.sale_balance is not None %}
+        <div>
+            <span class="summary-label">{% trans "Remaining Balance" %}</span>
+            <strong class="{% if unit.sale_balance > 0 %}text-error{% else %}text-success{% endif %}">
+                €{{ unit.sale_balance|floatformat:2 }}
+            </strong>
+        </div>
+        {% endif %}
         {% endif %}
     </div>
 </div>
@@ -175,6 +195,156 @@
 <div class="card empty-state empty-state--compact">
     {% trans "No meters installed." %}
 </div>
+{% endif %}
+
+<!-- Sale Payments Section -->
+{% if unit.is_for_sale %}
+<div class="page-header">
+    <h2>{% trans "Sale Payment Plan" %}</h2>
+    {% if user.is_admin %}
+    <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/sale-payment/create/" class="btn btn--primary btn--small">{% trans "+ Add Installment" %}</a>
+    {% endif %}
+</div>
+
+<!-- Sale Details Card -->
+<div class="card mb-16">
+    <div class="grid grid--4col gap-12">
+        {% if unit.buyer_name %}
+        <div>
+            <span class="summary-label">{% trans "Buyer" %}</span>
+            <span class="text-strong">{{ unit.buyer_name }}</span>
+        </div>
+        {% endif %}
+        {% if unit.buyer_contact %}
+        <div>
+            <span class="summary-label">{% trans "Contact" %}</span>
+            <span>{{ unit.buyer_contact }}</span>
+        </div>
+        {% endif %}
+        {% if unit.buyer_phone %}
+        <div>
+            <span class="summary-label">{% trans "Phone" %}</span>
+            <span>{{ unit.buyer_phone }}</span>
+        </div>
+        {% endif %}
+        {% if unit.buyer_email %}
+        <div>
+            <span class="summary-label">{% trans "Email" %}</span>
+            <span>{{ unit.buyer_email }}</span>
+        </div>
+        {% endif %}
+        {% if unit.sale_agreement_date %}
+        <div>
+            <span class="summary-label">{% trans "Agreement Date" %}</span>
+            <span>{{ unit.sale_agreement_date }}</span>
+        </div>
+        {% endif %}
+        {% if unit.sale_contract %}
+        <div>
+            <span class="summary-label">{% trans "Contract" %}</span>
+            <a href="{{ unit.sale_contract.url }}" target="_blank" rel="noopener">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 10v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3M6 4l4-4 4 4M10 1v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                {% trans "Download" %}
+            </a>
+        </div>
+        {% endif %}
+        {% if unit.sale_balance is not None %}
+        <div>
+            <span class="summary-label">{% trans "Sale Price" %}</span>
+            <span class="text-strong">€{{ unit.sale_price|floatformat:2 }}</span>
+        </div>
+        <div>
+            <span class="summary-label">{% trans "Total Paid" %}</span>
+            <span class="text-success">€{{ unit.sale_total_paid|floatformat:2 }}</span>
+        </div>
+        <div>
+            <span class="summary-label">{% trans "Remaining" %}</span>
+            <strong class="{% if unit.sale_balance > 0 %}text-error{% else %}text-success{% endif %}">
+                €{{ unit.sale_balance|floatformat:2 }}
+            </strong>
+        </div>
+        {% endif %}
+    </div>
+    {% if unit.sale_notes %}
+    <hr class="my-16">
+    <div>
+        <span class="summary-label">{% trans "Notes" %}</span>
+        <p class="mt-8">{{ unit.sale_notes|linebreaks }}</p>
+    </div>
+    {% endif %}
+</div>
+
+{% if sale_payments %}
+<div class="card card--flush mb-16">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "#" %}</th>
+                <th>{% trans "Due Date" %}</th>
+                <th>{% trans "Amount Due" %}</th>
+                <th>{% trans "Amount Paid" %}</th>
+                <th>{% trans "Balance" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Payment Date" %}</th>
+                <th>{% trans "Slip" %}</th>
+                {% if user.is_admin %}
+                <th>{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for sp in sale_payments %}
+            <tr>
+                <td data-label="{% trans "#" %}"><strong>{{ sp.installment_number }}</strong></td>
+                <td data-label="{% trans "Due Date" %}">{{ sp.due_date }}</td>
+                <td data-label="{% trans "Amount Due" %}">€{{ sp.amount_due|floatformat:2 }}</td>
+                <td data-label="{% trans "Amount Paid" %}">
+                    {% if sp.amount_paid > 0 %}€{{ sp.amount_paid|floatformat:2 }}{% else %}—{% endif %}
+                </td>
+                <td data-label="{% trans "Balance" %}">
+                    <strong class="{% if sp.running_balance > 0 %}text-error{% elif sp.running_balance < 0 %}text-success{% else %}text-neutral{% endif %}">
+                        €{{ sp.running_balance|floatformat:2 }}
+                    </strong>
+                </td>
+                <td data-label="{% trans "Status" %}">
+                    <span class="badge badge--{{ sp.status }}">{{ sp.get_status_display }}</span>
+                </td>
+                <td data-label="{% trans "Payment Date" %}">{{ sp.payment_date|default:"—" }}</td>
+                <td data-label="{% trans "Slip" %}">
+                    {% if sp.payment_slip %}
+                        <a href="{{ sp.payment_slip.url }}" target="_blank" rel="noopener">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 10v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3M6 4l4-4 4 4M10 1v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    {% else %}—{% endif %}
+                </td>
+                {% if user.is_admin %}
+                <td onclick="event.stopPropagation()">
+                    <div class="flex gap-8 flex-wrap">
+                        <a href="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/sale-payment/{{ sp.uuid }}/edit/" class="btn btn--secondary btn--small">{% trans "Edit" %}</a>
+                        {% if user.is_super_user %}
+                        <form action="/locations/{{ unit.location.uuid }}/units/{{ unit.uuid }}/sale-payment/{{ sp.uuid }}/delete/" method="post"
+                              onsubmit="return confirm('{% trans "Delete this installment?" %}')" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn--danger btn--small">{% trans "Delete" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card empty-state empty-state--compact">
+    {% trans "No payment schedule set up yet." %}
+</div>
+{% endif %}
 {% endif %}
 
 <!-- Lease Ledger Section -->

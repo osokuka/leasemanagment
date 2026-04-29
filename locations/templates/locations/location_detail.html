@@ -80,6 +80,8 @@
                 <td data-label="{% trans "Status" %}">
                     {% if unit.is_leased %}
                     <span class="badge badge--leased">{% trans "Leased" %}</span>
+                    {% elif unit.is_for_sale %}
+                    <span class="badge badge--{{ unit.sale_status }}">{{ unit.get_sale_status_display }}</span>
                     {% else %}
                     <span class="badge badge--vacant">{% trans "Vacant" %}</span>
                     {% endif %}

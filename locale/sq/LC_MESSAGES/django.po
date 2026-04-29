@@ -2034,6 +2034,82 @@ msgstr "Menaxhimi i Përdoruesve"
 msgid "Location Management"
 msgstr "Menaxhimi i Vendndodhjeve"
 
+# Sales — only strings NOT already defined elsewhere
+msgid "Leases & Sales"
+msgstr "Qiratë dhe Shitjet"
+
+msgid "Sales"
+msgstr "Shitjet"
+
+msgid "Sale Report"
+msgstr "Raporti i Shitjes"
+
+msgid "Print / PDF"
+msgstr "Printo / PDF"
+
+msgid "Back to Sales"
+msgstr "Kthehu te Shitjet"
+
+msgid "Sale Price"
+msgstr "Çmimi i Shitjes"
+
+msgid "Remaining"
+msgstr "Mbetur"
+
+msgid "Installments"
+msgstr "Këste"
+
+msgid "Property"
+msgstr "Pasuri"
+
+msgid "Agreement Date"
+msgstr "Data e Marrëveshjes"
+
+msgid "Buyer"
+msgstr "Blerësi"
+
+msgid "Contact"
+msgstr "Kontakti"
+
+msgid "Outstanding"
+msgstr "E Pambetur"
+
+msgid "Sale Details"
+msgstr "Detajet e Shitjes"
+
+msgid "For Sale"
+msgstr "Për Shitje"
+
+msgid "Reserved"
+msgstr "E Rezervuar"
+
+msgid "Sold (Partial)"
+msgstr "E Shitur (Pjesërisht)"
+
+msgid "Sold (Paid)"
+msgstr "E Shitur (Paguar)"
+
+msgid "No units are currently for sale."
+msgstr "Nuk ka njësi për shitje aktualisht."
+
+msgid "Add Sale Payment"
+msgstr "Shto Pagesë Shitjeje"
+
+msgid "Edit Sale Payment"
+msgstr "Redakto Pagesën e Shitjes"
+
+msgid "Sale payment installment #{num} created."
+msgstr "Kësti #{num} i pagesës së shitjes u krijua."
+
+msgid "Sale payment updated successfully."
+msgstr "Pagesa e shitjes u përditësua me sukses."
+
+msgid "Sale payment deleted successfully."
+msgstr "Pagesa e shitjes u fshi me sukses."
+
+msgid "Search by unit, buyer, or location"
+msgstr "Kërko sipas njësisë, blerësit ose vendndodhjes"
+
 #~ msgid "Payment stipulation"
 #~ msgstr "Kusht për pagesën"
 
